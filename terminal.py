@@ -16,9 +16,9 @@ individual exceptions
 
 
 class ConfirmationError(TypeError):
-     """
-     If confirmation is [False].
-     """
+    """
+    If confirmation is [False].
+    """
 
 
 class InvalidExtension(NameError):
@@ -35,9 +35,9 @@ class LinuxWhileNotSupport(NotImplementedError):
 
 
 class WifiNameConnectError(NameError):
-     """
-     Password or SSID/Wi-fi name of Network is not right.
-     """
+    """
+    Password or SSID/Wi-fi name of Network is not right.
+    """
 
 
 class ValueBrightnessError(ValueError, TypeError):
@@ -172,11 +172,12 @@ if sys.platform == 'darwin':
 
     def devise_battery():
         """
-        Output battery percent of computer.
+        Return battery percent of
+        computer at current time.
         :return: Battery percent
         """
 
-        return f'Battery percent: {str(subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";",r""))}'
+        return f'Battery percent: {str(subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";",r"%"))}'
 
     def macos_version():
         """
@@ -204,7 +205,7 @@ if sys.platform == 'darwin':
         of saved wi-fi network
         trough util "bunch of keys".
         (Must be Administrator for run this code)
-               (Available only on Mac-os)
+        (Available only on Mac-os)
         :param name_wifi_network:
         :return: password of network
         """
@@ -250,9 +251,20 @@ if sys.platform == 'darwin':
         subprocess.getoutput(cmd=command)
         return 'Successful...'
 
+    def create_folder(name):
+        """
+        Create folder.
+        :param name: Name of folder
+        :return: Successful
+        """
+        subprocess.getoutput(f'mkdir {name}')
+        return 'Successful...'
+
     class Voice(object):
         """
-        class Voice add more available voices & effects.
+        class Voice add more available
+        voices & effects(which beforehand
+        installed in Mac-os.)
         """
 
         def __init__(self: None, voice: bool):
