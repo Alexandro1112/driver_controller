@@ -5,7 +5,36 @@ import sys
 from warnings import filterwarnings
 from shutup import please
 from time import sleep
-from exceptions import *
+
+
+"""
+individual exceptions
+"""
+
+
+class LinuxWhileNotSupport(NotImplementedError):
+    """
+    TODO:
+    make linux version in a future
+    """
+
+
+class WifiNameConnectError(NameError):
+     """
+     Password or SSID of Network is not right.
+     """
+
+
+class ValueBrightnessError(ValueError, TypeError):
+    """
+    Value is not type [int].
+    """
+
+
+class WifiValueError(ValueError, BaseException):
+    """
+    There is no wi-fi network in util "bunch keys".
+    """
 
 
 __all__ = [
