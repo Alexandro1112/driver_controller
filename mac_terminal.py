@@ -215,7 +215,7 @@ if sys.platform == 'darwin':
 
     def show_password_wifi(name_wifi_network=None):
         """
-             [!!DANGEROUS!!]
+             [!!ATTENTION!!]
         Function return password
         of saved wi-fi network
         trough util "bunch of keys".
