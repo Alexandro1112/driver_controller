@@ -1,18 +1,32 @@
+#!/usr/bin/env python
 # Copyright (c) 2023 Aleksandr Bosov. All rights reserved.
 # The library is designed for Mac-OS, performs technical functions
 # such as disabling Wi-Fi, Bluetooth, sends notifications: text,
 # sound, working with screen brightness, and much more.
-
+import pathlib
 import subprocess
+import setuptools
 import sys
 from warnings import filterwarnings
 from shutup import please
 from time import sleep
+from psutil import process_iter
 
 
 """
-individual exceptions
+|---------------------|
+|individual exceptions|
+|---------------------|
 """
+
+
+
+
+
+class UnsupportedFormat(FileExistsError):
+    """
+    Method screenshot support only ['png', 'jpg', 'ico', 'gif', 'pict']
+    """
 
 
 class ConfirmationError(TypeError):
@@ -55,9 +69,9 @@ class WifiValueError(ValueError, BaseException):
 __all__ = [
     'set_max_brightness', 'devise_battery', 'connect_wifi_network', 'get_list_wifi_network', 'set_min_brightness',
     'set_brightness', 'get_list_bluetooth_device', 'macos_version', 'enable_bluetooth', 'enable_wifi', 'unplug_wifi',
-    'unplug_bluetooth', 'send_voice_notify', 'show_password_wifi', 'WifiValueError', 'WifiNameConnectError',
-    'ValueBrightnessError', 'send_text_alert', 'create_file', 'InvalidExtension', 'LinuxWhileNotSupport', 'Voice',
-    'send_lateral_message'
+    'unplug_bluetooth', 'send_voiceover', 'show_password_wifi', 'WifiValueError', 'WifiNameConnectError',
+    'ValueBrightnessError', 'send_text_alert', 'create_file', 'InvalidExtension', 'LinuxWhileNotSupport', 'Sound',
+    'send_lateral_message', 'screenshot', 'create_folder', 'current_connected_wifi_network', 'is_exist'
 ]
 
 
@@ -154,7 +168,7 @@ if sys.platform == 'darwin':
 
     def set_max_brightness():
         """
-        Set max brightness of screen equal one hundred
+        Set max brightness of screen equal one hundred.
         :return: Successfully
         """
         subprocess.getoutput(cmd='brightness -v 1')
@@ -163,7 +177,7 @@ if sys.platform == 'darwin':
 
     def set_min_brightness():
         """
-        Set min brightness of screen equal zero
+        Set min brightness of screen equal zero.
         :return: Successfully
         """
 
@@ -186,11 +200,12 @@ if sys.platform == 'darwin':
         """
         return f'Version your Mac os devise: {subprocess.getoutput(cmd="sw_vers -productVersion")}'
 
-    def send_voice_notify(text=None):
+    def send_voiceover(text=None):
         """
-        Send voice notify with text, which you point out.
+        Send voice notify with text,
+        which you point out.
         :param text:
-        :return: voice
+        :return: voice with point outed text
         """
         if text is None:
             return NameError
@@ -214,10 +229,15 @@ if sys.platform == 'darwin':
         if name_wifi_network in subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.'
                                                      'framework/Versions/A/Resources/airport scan'):
             return password.strip()
-        return WifiValueError(f'Wifi network {name_wifi_network} is not found.')
+        raise WifiValueError(f'Wifi network {name_wifi_network} is not found.')
 
     def send_text_alert(text):
-        """Make alert with point out text. """
+        """
+        Make alert with point out text,
+        which displayed at the center of
+        screen.
+        :param text message in alert
+        """
 
         part1 = "osascript -e 'tell app "
         part2 = '"System Events" to display dialog "'
@@ -239,14 +259,13 @@ if sys.platform == 'darwin':
 
     def send_lateral_message(label, subtitle, text):
         """
-        Make Lateral message.
+        Make Lateral message with:
         :param label: Main title on message
         :param subtitle: Subtitle of message
         :param text: Description of message
-        :return: Successful
+        :return: Successful.
         """
-        command = f"terminal-notifier -title '{label}' -subtitle '{subtitle}' -message '{text}'" \
-            f" -open https://myserver.local.net/stat_log.html -group 0 -execute `terminal-notifier -remove 0`"
+        command = f"terminal-notifier -title '{label}' -subtitle '{subtitle}' -message '{text}'"
 
         subprocess.getoutput(cmd=command)
         return 'Successful...'
@@ -257,21 +276,73 @@ if sys.platform == 'darwin':
         :param name: Name of folder
         :return: Successful
         """
-        subprocess.getoutput(f'mkdir {name}')
-        return 'Successful...'
+        if name == '':
+            raise NameError('Assign this folder a name!') from None
+        else:
+            subprocess.getoutput(f'mkdir {name}')
+            return 'Successful...'
 
-    class Voice(object):
+    def screenshot(filename, extension, pause=None):
+
+        """
+        Method support ['png', 'jpg', 'ico', 'gif', 'pict', 'eps'] formats
+        Make screenshot with pause, extensions and filename. .
+        :param pause: pause for determine screen capture [int, float, None].
+        :param filename: Pointed out name of created file(path).
+        :param extension: Extensions of created file.
+        :return: Successful if created is passed.
+        """
+        """
+        |----------------------------------------------|
+        |Available extensions for function "screenshot"|
+        |----------------------------------------------|
+        """
+        AVAILABLE_EXTENSIONS = ['png', 'jpg', 'ico', 'gif', 'pict', 'eps']
+
+        if extension in [i for i in AVAILABLE_EXTENSIONS]:
+
+            sleep(pause)
+            subprocess.getoutput(cmd=f'screencapture {filename}.{extension}')
+            return 'Successful...'
+
+        else:
+            """
+            [Format unsupported]
+            """
+            raise UnsupportedFormat("Method can make files only with extension ['png', 'jpg', 'ico', 'gif', 'pict']")
+
+    def current_connected_wifi_network():
+        """
+        Return current wi-fi network.
+        :return: Current wi-fi network, which you connect to
+        """
+        airport = pathlib.Path("/System/Library/PrivateFrameworks/Apple80211."
+                               "framework/Versions/Current/Resources/airport")
+
+        return subprocess.getoutput(cmd=f"{airport} -I | awk '/ SSID/"
+                                        f" {{print substr($0, index($0, $2))}}'")
+
+    def is_exist(application_name):
+        f"""
+        Check of existing of app({application_name})
+        :param application_name: APP name
+        :return: [True] if application exist on your devise, [False] - if no.
+        """
+        return bool(str(application_name).capitalize() in [i for i in process_iter()])
+
+    class Sound(object):
         """
         class Voice add more available
         voices & effects(which beforehand
         installed in Mac-os.)
         """
 
-        def __init__(self: None, voice: bool):
-            if voice is not True:
-                raise ConfirmationError('Argument voice must be [True]')
+        def __init__(self: None, sound: bool):
+            if sound is not True:
+                assert sound < 0
+                raise ConfirmationError('Argument "sound" must be [True]')
             else:
-                return
+                sound -= sound
 
         @staticmethod
         def pop():
@@ -295,7 +366,11 @@ if sys.platform == 'darwin':
 
 
 elif sys.platform == 'win32':
-    raise NotImplementedError('Windows is unsupported platform, only Mac Osx or Linux Os!')
+    raise NotImplementedError('Windows is unsupported platform, only on Mac Osx')
 
 else:
     raise LinuxWhileNotSupport('Linux is not supported since the creation of the library')
+
+
+if __name__ == '__main__':
+    setuptools.setup()
