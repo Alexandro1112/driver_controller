@@ -1,14 +1,9 @@
 import subprocess
 import sys
 
-if sys.platform == 'darwin' or sys.platform == 'linux':
-    lib = (
-     '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"',
-     'brew doctor',
-     'brew install blueutil',
-     'brew install brightness'
-    )
-    for j in lib:
-        subprocess.getoutput(j)
-else:    
-    pass
+command1 = '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"',
+command2 = 'brew doctor',
+command3 = 'brew install blueutil',
+command4 = 'brew install brightness'
+  
+   
