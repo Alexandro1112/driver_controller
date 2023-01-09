@@ -1,8 +1,25 @@
-#!/usr/bin/env python
-# Copyright (c) 2023 Aleksandr Bosov. All rights reserved.
-# The library is designed for Mac-OS, performs technical functions
-# such as disabling Wi-Fi, Bluetooth, sends notifications: text,
-# sound, working with screen brightness, and much more.
+# /opt/anaconda3/bin/python
+# Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.
+# The library is designed for Mac-OS, performs technical
+# functions such as disabling Wi-Fi, Bluetooth, sends ,
+# notifications: text, sound, working with screen brightness and much more.
+# ---------------------------------------------------------------------------------------------------------------------|
+# INSTALL   || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
+# REINSTALL(if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# MODULES || brew install brightness brew install || brew doctor || brew install blueutil
+# ---------------------------------------------------------------------------------------------------------------------|
+# Any files which use code already installed in
+# OS Mac, if you delete their
+#  /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/ ||
+#  /System/Library/Sounds/Pop.aiff  ||
+#  /System/Library/Sounds/Blow.aiff ||
+#  /System/Library/Sounds/Glass.aiff ||
+#  /System/Library/Sounds/Funk.aiff  ||
+#  /System/Library/Sounds/Submarine.aiff ||
+#  /System/Library/Sounds/Sosumi.aiff ||
+# code - will not working.How check this?
+# Finder -> Go -> Go to folder ->
+# input the file-path which I wrote.
 import pathlib
 import subprocess
 import setuptools
@@ -11,8 +28,7 @@ from warnings import filterwarnings
 from shutup import please
 from time import sleep
 from psutil import process_iter
-
-
+import pyspeedtest
 """
 |---------------------|
 |individual exceptions|
@@ -20,12 +36,21 @@ from psutil import process_iter
 """
 
 
+class UseLinuxTerminal(FileNotFoundError):
+    """
+    Linux version already working.
+    """
 
+
+class ApplicationNotExist(SystemError):
+    """
+    Application, which you point outed is not exist
+    """
 
 
 class UnsupportedFormat(FileExistsError):
     """
-    Method screenshot support only ['png', 'jpg', 'ico', 'gif', 'pict']
+    Method screenshot support only ['png', 'jpg', 'ico', 'gif', 'pict'] formats.
     """
 
 
@@ -69,9 +94,10 @@ class WifiValueError(ValueError, BaseException):
 __all__ = [
     'set_max_brightness', 'devise_battery', 'connect_wifi_network', 'get_list_wifi_network', 'set_min_brightness',
     'set_brightness', 'get_list_bluetooth_device', 'macos_version', 'enable_bluetooth', 'enable_wifi', 'unplug_wifi',
-    'unplug_bluetooth', 'send_voiceover', 'show_password_wifi', 'WifiValueError', 'WifiNameConnectError',
+    'unplug_bluetooth', 'text_voiceover', 'show_password_wifi', 'WifiValueError', 'WifiNameConnectError',
     'ValueBrightnessError', 'send_text_alert', 'create_file', 'InvalidExtension', 'LinuxWhileNotSupport', 'Sound',
-    'send_lateral_message', 'screenshot', 'create_folder', 'current_connected_wifi_network', 'is_exist'
+    'send_lateral_message', 'screenshot', 'create_folder', 'current_connected_wifi_network', 'is_exist', 'Open',
+    'close_app'
 ]
 
 
@@ -86,7 +112,7 @@ if sys.platform == 'darwin':
 
     def get_list_bluetooth_device():
         """ Function output all bluetooth devise(s),
-         which available to your devise."""
+         which available for your devise."""
 
         bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
 
@@ -155,6 +181,7 @@ if sys.platform == 'darwin':
     def set_brightness(brightness_percent: int):
         """
         Automatically set brightness percent [type - int]
+        example: 25; 50; 75; 100(max)
         :param brightness_percent:
         :return: Successfully
         """
@@ -163,8 +190,18 @@ if sys.platform == 'darwin':
             raise ValueBrightnessError('Type value of brightness must be ', int)
 
         else:
-            subprocess.getoutput(cmd=f'brightness .{brightness_percent}')
-            return 'Successful...'
+            if brightness_percent == 100:
+                brightness_percent -= brightness_percent + 1
+                subprocess.getoutput(cmd=f'brightness 1')
+                return 'Successful...'
+
+            elif isinstance(brightness_percent/10, float):
+                brightness_percent *= 10
+                subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
+                return 'Successful...'
+            else:
+                subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
+                return 'Successful...'
 
     def set_max_brightness():
         """
@@ -193,6 +230,7 @@ if sys.platform == 'darwin':
 
         return f'Battery percent: {str(subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";",r"%"))}'
 
+
     def macos_version():
         """
         Function.
@@ -200,7 +238,7 @@ if sys.platform == 'darwin':
         """
         return f'Version your Mac os devise: {subprocess.getoutput(cmd="sw_vers -productVersion")}'
 
-    def send_voiceover(text=None):
+    def text_voiceover(text=None):
         """
         Send voice notify with text,
         which you point out.
@@ -215,7 +253,7 @@ if sys.platform == 'darwin':
 
     def show_password_wifi(name_wifi_network=None):
         """
-             [!!ATTENTION!!]
+             [!!DANGEROUS!!]
         Function return password
         of saved wi-fi network
         trough util "bunch of keys".
@@ -257,15 +295,20 @@ if sys.platform == 'darwin':
 
         return 'Successful...'
 
-    def send_lateral_message(label, subtitle, text):
+    def send_lateral_message(label, subtitle, text, file_icon: [None, str]):
         """
         Make Lateral message with:
         :param label: Main title on message
         :param subtitle: Subtitle of message
         :param text: Description of message
+        :param file_icon: Icon in message (Path to image)
+        (must local in project-folder) Point out [None]
+        if you don't want used icon
         :return: Successful.
         """
-        command = f"terminal-notifier -title '{label}' -subtitle '{subtitle}' -message '{text}'"
+
+        fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
+        command = f"terminal-notifier -title '{label}' -subtitle '{subtitle}' -message '{text}' -appIcon {fullpath}"
 
         subprocess.getoutput(cmd=command)
         return 'Successful...'
@@ -301,7 +344,7 @@ if sys.platform == 'darwin':
 
         if extension in [i for i in AVAILABLE_EXTENSIONS]:
 
-            sleep(pause)
+            sleep(pause if pause is not None else 0)
             subprocess.getoutput(cmd=f'screencapture {filename}.{extension}')
             return 'Successful...'
 
@@ -314,21 +357,64 @@ if sys.platform == 'darwin':
     def current_connected_wifi_network():
         """
         Return current wi-fi network.
-        :return: Current wi-fi network, which you connect to
+        :return: Current wi-fi network,
+         which you connect to.
         """
         airport = pathlib.Path("/System/Library/PrivateFrameworks/Apple80211."
                                "framework/Versions/Current/Resources/airport")
 
         return subprocess.getoutput(cmd=f"{airport} -I | awk '/ SSID/"
-                                        f" {{print substr($0, index($0, $2))}}'")
+                                        f" {{print substr($0, index($0, $2))}}'").capitalize()
 
     def is_exist(application_name):
-        f"""
+        """
         Check of existing of app({application_name})
         :param application_name: APP name
-        :return: [True] if application exist on your devise, [False] - if no.
+        :return: [True] if application
+        exist on your devise, [False] - if no.
         """
-        return bool(str(application_name).capitalize() in [i for i in process_iter()])
+        return bool(application_name in (i.name() for i in process_iter()))
+
+    def close_app(application_name):
+        """
+        Close app.
+        :param application_name:
+        Name of App which will
+        be close.
+        :return: [None]
+        """
+        subprocess.getoutput(cmd=f'pkill {application_name}')
+
+
+    class Open(object):
+        @staticmethod
+        def application(path_app):
+            """
+            Open application by his name.
+            :param path_app: Path to Application
+            (begin from /Applications/{path_app}.app)
+            EXAMPLE [/Applications/Finder.app]
+            :return: Successful if successful opened app.
+            """
+            cmd = subprocess.getoutput(cmd=f'open -F -a "{path_app}"')
+            if cmd.strip() != '':
+                raise ApplicationNotExist('Application %s not exist' % path_app)
+
+            else:
+                return 'Successful...'
+
+        @staticmethod
+        def url(url):
+            """
+            Open url in main browser
+            DEFAULT BROWSER: Safari.
+            :param url: url
+            :return: None
+            """
+            cmd = f'open /Applications/Safari.app {url}' # Select your main browser
+            subprocess.getoutput(cmd=cmd)
+            subprocess.getstatusoutput(cmd=cmd)
+
 
     class Sound(object):
         """
@@ -339,37 +425,88 @@ if sys.platform == 'darwin':
 
         def __init__(self: None, sound: bool):
             if sound is not True:
-                assert sound < 0
                 raise ConfirmationError('Argument "sound" must be [True]')
             else:
-                sound -= sound
+                sound += True
 
         @staticmethod
-        def pop():
-            """Pop voice-notify."""
-            subprocess.getoutput(cmd=str('for i in {1..1}; do afplay /System/Library/Sounds/Pop.aiff -v 10; done'))
+        def pop_sound(iters: int):
+            """
+            Pop voice-notify.
+            :param iters How mane
+            iterations(repeats) of sound.
+            """
+
+            subprocess.getoutput(cmd='for i in {1..%s}; do afplay /System/Library/Sounds/Pop.aiff -v 10; done' % iters)
 
         @staticmethod
-        def blow():
-            """Blow voice-notify."""
-            subprocess.getoutput(cmd=str('for i in {1..1}; do afplay /System/Library/Sounds/Blow.aiff -v 10; done'))
+        def blow_sound(iters: int):
+            """Blow voice-notify.
+            :param iters How mane
+            iterations(repeats) of sound.
+            """
+            subprocess.getoutput(cmd='for i in {1..%s}; do afplay /System/Library/Sounds/Blow.aiff -v 10; done' % iters)
 
         @staticmethod
-        def glass():
-            """Glass voice-notify."""
-            subprocess.getoutput(cmd=str('for i in {1..1}; do afplay /System/Library/Sounds/Glass.aiff -v 10; done'))
+        def glass_sound(iters: int):
+            """
+            Glass voice-notify.
+            :param iters How mane
+            iterations(repeats) of sound.
+            """
+            subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
+                                     '/System/Library/Sounds/Glass.aiff -v 10; done' % iters)
 
         @staticmethod
-        def funk():
-            """Funk voice-notify."""
-            subprocess.getoutput(cmd=str('for i in {1..1}; do afplay /System/Library/Sounds/Funk.aiff -v 10; done'))
+        def funk_sound(iters: int):
+            """
+            Funk voice-notify.
+            :param iters How many
+            iters(repeats) of sound.
+            """
+            subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
+                                     '/System/Library/Sounds/Funk.aiff -v 10; done' % iters)
+
+        @staticmethod
+        def submarine_sound(iters: int):
+            """
+            Submarine voice-notify.
+            :param iters How many
+            iterations(repeats) of sound.
+            """
+            subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
+                                     '/System/Library/Sounds/Submarine.aiff -v 10; done' % iters)
+
+        @staticmethod
+        def ping_sound(iters: int):
+            """
+            Ping voice-notify.
+            :param iters How mane
+            iterations(repeats) of sound.
+            """
+            subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
+                                     '/System/Library/Sounds/Ping.aiff -v 10; done' % iters)
+
+        @staticmethod
+        def sosumi_sound(iters: int):
+            """
+            Sosumi voice-notify.
+            :param iters How mane
+            iterations(repeats) of sound.
+            """
+            subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
+                                     '/System/Library/Sounds/Sosumi.aiff -v 10; done' % iters)
 
 
 elif sys.platform == 'win32':
     raise NotImplementedError('Windows is unsupported platform, only on Mac Osx')
 
 else:
-    raise LinuxWhileNotSupport('Linux is not supported since the creation of the library')
+
+    raise LinuxWhileNotSupport
+
+    # raise LinuxWhileNotSupport('Linux is not supported since the creation of the library')
+    # already support only any functions...
 
 
 if __name__ == '__main__':
