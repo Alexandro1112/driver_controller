@@ -1,0 +1,9 @@
+[submodule "blueutil"]
+	path = blueutil
+	url = https://github.com/toy/blueutil
+[submodule "brightness"]
+	path = brightness
+	url = https://github.com/nriley/brightness
+[submodule "brew"]
+	path = brew
+	url = https://github.com/Homebrew/brew

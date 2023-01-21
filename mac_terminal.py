@@ -28,13 +28,13 @@ import pathlib
 import subprocess
 # check platform OS
 import sys
-# Unplug warnings, errors
+# Unplug warnings, unexpected errors
 from warnings import filterwarnings
 from shutup import please
 # pause for methods
 from time import sleep
 
-
+# for get list applications
 from psutil import process_iter
 
 """
