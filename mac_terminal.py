@@ -2,15 +2,16 @@
 # Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.
 # The library is designed for Mac-OS, performs technical
 # functions such as disabling Wi-Fi, Bluetooth, sends ,
-# notifications: text, sound, working with screen brightness, control devises and much more.
+# notifications: text, sound, working with screen brightness, 
+# control devises and much more.
 # ---------------------------------------------------------------------------------------------------------------------|
 # INSTALL  || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
 # REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-# LIB || brew install brightness || brew doctor || brew install blueutil || brew install ffmpeg
-# Installations this dependencies will be automatic.
+# LIB- INSTALLER || brew install brightness || brew doctor || brew install blueutil || brew install ffmpeg 
+# Installations this dependencies will be automatic if you use git-repository.
 # ---------------------------------------------------------------------------------------------------------------------|
-# Any files which use code already installed in
-# OS Mac in System files, if they not exist - code will not working.
+#  Any files which use code already installed in
+#  OS Mac in System files, if they not exist - code will not working.
 #  /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/ ||
 #  /System/Library/Sounds/Pop.aiff  ||
 #  /System/Library/Sounds/Blow.aiff ||
