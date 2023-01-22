@@ -7,7 +7,7 @@ import sys
 # RUN || brew install brightness || brew doctor || brew install blueutil
 
 __all__ = [
-     'set_brightness', 'enable_bluetooth', 'unplug_bluetooth', 'ValueBrightnessError'
+     'Switcher', 'Brightness',  'ValueBrightnessError'
 ]
 
 
@@ -18,52 +18,52 @@ class ValueBrightnessError(TypeError):
 
 
 if sys.platform == 'linux':
-    def set_brightness(brightness_percent: int):
-        """
-                    [LINUX DOCUMENTATION]
-         Automatically set brightness percent [type - int]
-                   example: 25; 50; 75; 100(max)
-                   :param brightness_percent:
-                   :return: Successfully
-         """
+    class Brightness(object):
+        def set_brightness(self, brightness_percent: int):
+            """
+                        [LINUX DOCUMENTATION]
+             Automatically set brightness percent [type - int]
+                       example: 25; 50; 75; 100(max)
+                       :param brightness_percent:
+                       :return: Successfully
+             """
 
-        if not isinstance(brightness_percent, int):
-            raise ValueBrightnessError('Type value of brightness must be ', int)
+            if not isinstance(brightness_percent, int):
+                raise ValueBrightnessError('Type value of brightness must be ', int)
 
-        else:
-            if brightness_percent == 100:
-                brightness_percent -= brightness_percent + 1
-                subprocess.getoutput(cmd=f'brightness 1')
-                return 'Successful...'
-
-            elif isinstance(brightness_percent / 10, float):
-                brightness_percent *= 10
-                subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
-                return 'Successful...'
             else:
+                if brightness_percent == 100:
+                    brightness_percent -= brightness_percent + 1
+                    subprocess.getoutput(cmd=f'brightness 1')
+                    return 'Successful...'
 
-                subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
-                return 'Successful...'
+                elif isinstance(brightness_percent / 10, float):
+                    brightness_percent *= 10
+                    subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
+                    return 'Successful...'
+                else:
 
-    def unplug_bluetooth():
+                    subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
+                    return 'Successful...'
 
-        """
-        Just unplug bluetooth.
-        :return: Successfully
-        """
+    class Switcher(object):
+        def unplug_bluetooth(self):
+            """
+            Just unplug bluetooth.
+            :return: Successfully
+            """
 
-        subprocess.getoutput(cmd='blueutil -p off')
-        return 'Successful...'
+            subprocess.getoutput(cmd='blueutil -p off')
+            return 'Successful...'
 
+        def enable_bluetooth(self):
+            """
+            Just enable bluetooth.
+            :return: Successfully
+            """
 
-    def enable_bluetooth():
-        """
-        Just enable bluetooth.
-        :return: Successfully
-        """
-
-        subprocess.getoutput(cmd='blueutil -p on')
-        return 'Successful...'
+            subprocess.getoutput(cmd='blueutil -p on')
+            return 'Successful...'
 
 
 else:
