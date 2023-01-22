@@ -1,3 +1,6 @@
+
+[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=Alexandro1112&layout=compact)](https://github.com/anuraghazra/github-readme-stats)
+
 # pyTerminalproccesosx
 Hello everyone!This module will help you change brightness, output , connecting to wifi-network, bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need. For start work with this library need install by using 
