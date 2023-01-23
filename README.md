@@ -31,7 +31,7 @@ print(pyTerminalproccesosx.SystemConfig().devise_battery,
       pyTerminalproccesosx.SystemConfig().screen_size,
       pyTerminalproccesosx.SystemConfig().current_connected_wifi_network)
 ```
-Yesy!
+Easy!
 
 Send text alert you can with
 
