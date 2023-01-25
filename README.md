@@ -89,4 +89,3 @@ print(pyTerminalproccesosx.ScreenCapture().screenshot(filename='screenshot', ext
 ``` 
 
 <h1> That was main methods this python library. Exist even linux version.<h1>
-
