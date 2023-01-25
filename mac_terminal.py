@@ -5,13 +5,13 @@
 # notifications: text, sound, recording audio, working with screen brightness,
 # control devises and much more.
 # ---------------------------------------------------------------------------------------------------------------------|
-# INSTALL  || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
+# INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
 # REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil || brew install ffmpeg ||
 # pip install loger || pip install shutup || pip install psutil
 # Installations this dependencies will be automatic if you use git-repository.
 # ---------------------------------------------------------------------------------------------------------------------|
-#  Any files which use code already installed in
+#  Any files which already installed in
 #  OS Mac in System files, if they not exist - code will not working.
 #  /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/ ||
 #  /System/Library/Sounds/Pop.aiff  ||
@@ -32,19 +32,21 @@ import subprocess
 import sys
 # Unplug warnings, unexpected errors
 from warnings import filterwarnings
-from shutup import please
 
+from shutup import please
 # pause for methods
 from time import sleep
-
 # for get list applications
 from psutil import process_iter
 # Constants
 from .CONSTANTS import *
-
 # Log-alerts
 from loger import *
 
+from sounddevice import query_devices
+
+
+    
 """
 |---------------------|
 |individual exceptions|
@@ -52,7 +54,7 @@ from loger import *
 """
 
 
-class UseLinuxTerminal(FileNotFoundError):
+class UseLinuxTerminal(OSError):
     """
     Linux version already working.
     """
@@ -152,13 +154,14 @@ if sys.platform == 'darwin':
             for names in names_.values():
                 self.networks = list(names.values())[0]
                 print(self.networks.split())
+                
 
         def get_list_bluetooth_device(self):
             """ Function output all bluetooth devise(s),
              which available for your devise."""
             self.bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
+            
 
-            return self.bluetooth.split('Bluetooth:')[0].capitalize()
 
         def get_list_audio_devises(self):
             """
@@ -167,8 +170,8 @@ if sys.platform == 'darwin':
             :return: devises
             (Available only on Mac-os)
             """
-            self.devises = subprocess.getoutput(cmd='system_profiler SPAudioDataType')
 
+            self.devises = query_devices()
             return self.devises
 
     class Connector(object):
@@ -464,17 +467,18 @@ if sys.platform == 'darwin':
 
     class PhotoCapture(object):
 
-         def capture(self, cam_index: int, extension, filename):
-             """
-              Method make image trough web-camera
-             :param cam_index: index where local camera
-             :param extension: extension of created image
-             :param filename: name of created file
-             :return:
-             """
-             subprocess.getoutput(cmd=f'ffmpeg -f avfoundation -video_size {1280}x{720}'
+        def capture(self, cam_index: int, extension, filename):
+
+            """
+            Method make image trough web-camera
+            :param cam_index: index where local camera
+            :param extension: extension of created image
+            :param filename: name of created file
+            :return: Successful...
+            """
+            subprocess.getoutput(cmd=f'ffmpeg -f avfoundation -video_size {1280}x{720}'
                                       f' -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
-             return 'Successful...'
+            return 'Successful...'
 
 
     class AudioRecorder(object):
@@ -490,7 +494,7 @@ if sys.platform == 'darwin':
              :param microphone_index: Microphone index
              :param extension: Extension of creates file
              :param filename: Name
-             :param record_time: Record time (Mean seconds)
+             :param record_time: Record time (format minutes)
              :return:
              """
              if extension in self.AVAILABLE_EXTENSIONS:
@@ -550,7 +554,6 @@ if sys.platform == 'darwin':
             if cmd.strip() != '':
                 raise ApplicationNotExist('Application %s not exist' % path_app)
 
-
             else:
                 return 'Successful...'
 
@@ -575,11 +578,14 @@ if sys.platform == 'darwin':
         installed in Mac-os.)
         """
 
-        def __init__(self, sound: bool):
-            if sound is not True:
-                raise ConfirmationError('Argument "sound" must be [True]')
-            else:
-                sound += True
+        def __init__(self):
+
+            self.sound1 = '/System/Library/Sounds/Pop.aiff',
+            self.sound2 = '/System/Library/Sounds/Blow.aiff',
+            self.sound3 = '/System/Library/Sounds/Glass.aiff',
+            self.sound4 = '/System/Library/Sounds/Funk.aiff',
+            self.sound5 = '/System/Library/Sounds/Submarine.aiff',
+            self.sound6 = '/System/Library/Sounds/Sosumi.aiff'
 
         @staticmethod
         def pop_sound(iters: int):
