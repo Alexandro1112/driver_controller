@@ -4,13 +4,23 @@
 # functions such as disabling Wi-Fi, Bluetooth, sends ,
 # notifications: text, sound, recording audio, working with screen brightness,
 # control devises and much more.
-# ---------------------------------------------------------------------------------------------------------------------|
+# |---------------------------------------------------------------------------------------------------------------------|
+#                                                   ||INSTALLATION||
+# If you cloned this repository trough github, dependencies commands such as [blueutil, brew, brightness]
+# successful installed. Dont forget commands:
+# I COMMAND - [ pip3 install loger]
+# II COMMAND = [ pip3 install plyer]
+# III COMMAND = [ pip3 install sounddevice]
+# If code not working, though git submodules exist in git-hub repository: complete few commands:
 # INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
 # REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-# LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil || brew install ffmpeg ||
-# pip install loger || pip install shutup || pip install psutil
-# Installations this dependencies will be automatic if you use git-repository.
-# ---------------------------------------------------------------------------------------------------------------------|
+# LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil ||
+# brew install ffmpeg OR sudo port install ffmpeg ||
+#                                               ||PORT-INSTALLATION ||
+# I COMMAND - [export PATH=/opt/local/bin:/opt/local/sbin:$PATH]
+# II COMMAND - [export DISPLAY=:0.0]
+# III COMMAND - [port] 
+# |---------------------------------------------------------------------------------------------------------------------|
 #  Any files which already installed in
 #  OS Mac in System files, if they not exist - code will not working.
 #  /System/Library/PrivateFrameworks/Apple80211.framework/Versions/A/Resources/ ||
@@ -42,7 +52,7 @@ from psutil import process_iter
 from .CONSTANTS import *
 # Log-alerts
 from loger import *
-
+# Sound-devises
 from sounddevice import query_devices
 
 
@@ -116,20 +126,6 @@ __all__ = ['PasswordManager',  'WifiValueError', 'WifiNameConnectError',
 ]
 
 
-class UPPER:
-    """
-    Upper text register for press() method
-    """
-
-    UPPER = 'upper'
-
-
-class LOWER:
-    """
-    Lower text register for press() method
-    """
-    LOWER = 'lower'
-
 
 if sys.platform == 'darwin':
 
@@ -139,6 +135,7 @@ if sys.platform == 'darwin':
         def get_list_wifi_networks(self):
             """ Function output all wi-fi networks,
                   which available for your devise."""
+            
             self.scan_cmd = subprocess.Popen(['airport', '-s'], stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT)
             scan_out, scan_err = self.scan_cmd.communicate()
@@ -453,7 +450,7 @@ if sys.platform == 'darwin':
 
             if extension in [i for i in self.AVAILABLE_EXTENSIONS]:
 
-                sleep(pause if pause is not None else 0)
+                sleep(pause if pause is not None else 0.0)
                 subprocess.getoutput(cmd=f'screencapture {filename}.{extension}')
                 return 'Successful...'
 
@@ -476,8 +473,10 @@ if sys.platform == 'darwin':
             :param filename: name of created file
             :return: Successful...
             """
-            subprocess.getoutput(cmd=f'ffmpeg -f avfoundation -video_size {1280}x{720}'
+            subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg  -f avfoundation -video_size {1280}x{720}'
                                       f' -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
+
+
             return 'Successful...'
 
 
@@ -499,7 +498,7 @@ if sys.platform == 'darwin':
              """
              if extension in self.AVAILABLE_EXTENSIONS:
                  print('recording...')
-                 subprocess.getoutput(cmd=f'ffmpeg -f avfoundation -i ":{microphone_index}" -t {record_time} {filename}.{extension}')
+                 subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg -f avfoundation -i ":{microphone_index}" -t {record_time} {filename}.{extension}')
                  return 'Successful...'
 
              else:
@@ -528,16 +527,13 @@ if sys.platform == 'darwin':
 
 
     class Clicker(object):
-       def press(self, button, register: [LOWER, UPPER]):
-           if register == 'upper':
+        @staticmethod
+        def press(key):
 
-                subprocess.getoutput(cmd='osascript -e \'tell application '
-                                         '"System Events" to keystroke "%s" using {shift down}\'' % str(button).upper())
-                return 'Successful...'
-           elif register == 'lower':
-                subprocess.getoutput(cmd='osascript -e \'tell application '
-                                         '"System Events" to keystroke "%s" using {shift down}\'' % str(button).lower())
-                return 'Successful...'
+            subprocess.getoutput(cmd='osascript -e \'tell application '
+                                         '"System Events" to keystroke "%s" using {shift down}\'' % str(key).upper())
+            return 'Successful...'
+
 
 
     class Open(object):
@@ -672,7 +668,6 @@ if sys.platform == 'darwin':
 
 elif sys.platform == 'win32':
      raise OSError
-
 
 
 if __name__ == '__main__':
