@@ -3,7 +3,7 @@
 # The library is designed for Mac-OS, performs technical
 # functions such as disabling Wi-Fi, Bluetooth, sends ,
 # notifications: text, sound, recording audio, working with screen brightness,
-# control devises and much more.Soon be cross-platform.
+# control devises, collect video-data and much more.Soon be cross-platform.
 # |---------------------------------------------------------------------------------------------------------------------|
 #                                                   ||PYTHON-INSTALLATION||
 # If you cloned this repository trough github, dependencies commands such as [blueutil, brew, brightness]
@@ -61,23 +61,26 @@ from sounddevice import query_devices
 from .exceptions import *
 
 
+import os
+
 __all__ = ['PasswordManager', 'WifiValueError', 'WifiNameConnectError',
            'ValueBrightnessError', 'InvalidExtension', 'Sound', 'AppSystem', 'Open',
            'Clicker', 'SystemConfig', 'OutputListsDevises', 'Brightness', 'Switching', 'Notifier',
            'Connector'
      , 'Creator', "VoiceOver", 'ScreenCapture', 'PhotoCapture', "AudioRecorder", 'UnsupportedFormat', 'CONSTANT_SOUNDS',
-           'AppConfigure', 'FileConfig', 'Volume', 'ScreenVideoCapture', 'ExtensionError', 'ApplicationNotExist',
+           'AppConfigure', 'FileConfig', 'Volume', 'WebCameraCapture', 'ExtensionError', 'ApplicationNotExist',
            ]
 
 if sys.platform == 'darwin':
 
      class OutputListsDevises(object):
           """ Return output devises """
+
           def __init__(self):
-               self.scan_cmd = subprocess.Popen(['airport', '-s'], stdout=subprocess.PIPE,stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
+               self.scan_cmd = subprocess.Popen(['airport', '-s'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                                stdin=subprocess.PIPE)
                self.bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
                self.devises = query_devices()
-
 
           def get_list_wifi_networks(self):
                """ Function output all wi-fi networks,
@@ -100,7 +103,8 @@ if sys.platform == 'darwin':
                """ Function output all bluetooth devise(s),
              which available for your devise."""
 
-               return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() == '' else None
+               return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[
+                                                                        0].strip() == '' else None
 
           def get_list_audio_devises(self):
                """
@@ -115,6 +119,7 @@ if sys.platform == 'darwin':
 
      class Connector(object):
           """Connect to wi-fi networks"""
+
           @staticmethod
           def connect_wifi_network(wifi_network, password):
                """
@@ -138,6 +143,7 @@ if sys.platform == 'darwin':
 
      class Switching(object):
           """Switch wi-fi/bluetooth"""
+
           def unplug_wifi(self):
                """
             Just unplug wi-fi.
@@ -224,12 +230,17 @@ if sys.platform == 'darwin':
 
      class SystemConfig(object):
           """Data about mac"""
+
           def __init__(self):
                self.percent = subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";", r"")
                self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
-               airport = pathlib.Path("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
-               self.network = subprocess.getoutput(cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
-               self.size = subprocess.getoutput('system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
+               airport = pathlib.Path(
+                    "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
+               self.network = subprocess.getoutput(
+                    cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
+               self.size = \
+               subprocess.getoutput('system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(
+                    ' ')
                self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                del self.size[0], self.size[-1]
 
@@ -280,6 +291,7 @@ if sys.platform == 'darwin':
 
      class VoiceOver(object):
           """Voiceover text"""
+
           def text_voiceover(self, text=None):
                """
             Send voice notify with text,
@@ -291,11 +303,12 @@ if sys.platform == 'darwin':
                if text is None:
                     raise NameError
                else:
-                   subprocess.getoutput(cmd=f'say {text}')
+                    subprocess.getoutput(cmd=f'say {text}')
 
 
      class PasswordManager(object):
           """Paasword-manager"""
+
           def show_password_wifi(self, name_wifi_network=None):
                """
               [!!ATTENTION!!]
@@ -317,6 +330,7 @@ if sys.platform == 'darwin':
 
      class Notifier(object):
           """Send different alerts"""
+
           def send_text_alert(self, text):
                """
             Make alert with point out text,
@@ -357,6 +371,7 @@ if sys.platform == 'darwin':
 
      class Creator(object):
           """Create anything"""
+
           def create_file(self, name, extension):
                """
             Create file with setting & extension.
@@ -380,10 +395,10 @@ if sys.platform == 'darwin':
 
      class ScreenCapture(object):
           """Make screenshot/video with settings"""
+
           def __init__(self):
                self.AVAILABLE_EXTENSIONS = ('png', 'jpg', 'icns', 'gif', 'pict', 'eps')
                self.command = '/opt/local/bin/ffmpeg -f avfoundation -t %s -framerate 10 -video_size 640x480 -i "%s:%s" %s.%s'
-
 
           def screenshot(self, filename, extension, pause=None):
                """
@@ -408,13 +423,16 @@ if sys.platform == 'darwin':
                     return 'Successful...'
 
                else:
-                   """
-                   [Format unsupported]
-                   """
-                   log('Unsupported format', level=3)
-                   raise UnsupportedFormat(
+                    """
+                    [Format unsupported]
+                    """
+                    log('Unsupported format', level=3)
+                    raise UnsupportedFormat(
                          "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
-          def screen_capture(self, record_time: int, filename, extensions,   microphone_index=0, camera_index=0) -> [int, int, int]:
+
+          def screen_capture(self, record_time: int, filename, extensions, microphone_index=0, camera_index=0) -> [int,
+                                                                                                                   int,
+                                                                                                                   int]:
                """
                ScreenCapture - create video with voice, of your screen.
                :param record_time: Record time
@@ -424,7 +442,8 @@ if sys.platform == 'darwin':
                :param camera_index: Camera index
                :return:
                """
-               return subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg -f avfoundation -r {record_time} -s 1280x720 -i "{microphone_index}:{camera_index}"  {filename}.{extensions}')
+               return subprocess.getoutput(
+                    cmd=f'/opt/local/bin/ffmpeg -f avfoundation -t {record_time} -i "{microphone_index}:{camera_index}" -pix_fmt yuv420p -r 25 -t 5 {filename}.{extensions}')
 
           def video_capture(self, record_time, camera_index, microphone_index, filename, extension):
                """
@@ -463,12 +482,8 @@ if sys.platform == 'darwin':
             :param filename: name of created file
             :return: Successful...
             """
-               subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg  -f avfoundation -video_size {1280}x{720}'
-                                        f' -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
-               if subprocess.getstatusoutput(cmd=f'/opt/local/bin/ffmpeg  -f avfoundation -video_size {1280}x{720} -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')[0] == 1:
-                    raise ExtensionError
-               else:
-                   return 'Successful...'
+               subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
+               return 'Check file is %s.%s' % (filename, extension)
 
 
      class AudioRecorder(object):
@@ -490,18 +505,23 @@ if sys.platform == 'darwin':
             :return:
             """
                if extension in self.AVAILABLE_EXTENSIONS:
-                    print('recording...')
-                    subprocess.getoutput(
-                         cmd=f'/opt/local/bin/ffmpeg -f avfoundation -i ":{microphone_index}" -t {record_time} {filename}.{extension}')
-                    return 'Successful...'
+                    if os.path.isfile(f'{filename}.{extension}'):
+                         raise FileExistsError(f'Please, rename file {filename}.{extension}, him already exist.')
+                    else:
+                         print('recording...')
+                         subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg -f avfoundation -i ":{microphone_index}" -t {record_time} {filename}.{extension}')
+                         return 'Check file is %s.%s' % (filename, extension)
 
                else:
                     raise UnsupportedFormat('Method can make files only with extensions (\'wav', 'mp3\')')
 
 
+
+
      class AppSystem(object):
           def __init__(self):
                self.apps = process_iter()
+
           def is_exist(self, application_name):
                """
             Check of existing of app({application_name})
@@ -550,17 +570,17 @@ if sys.platform == 'darwin':
 
           @staticmethod
           def url(url):
-              """
-              Open url in main browser
-              DEFAULT BROWSER: Safari.
-              :param url: 'url'
-              :return: None
-              :param url: 
-              :return: 
-              """                        # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
-              cmd = f'open /Applications/Safari.app {url}'  # Select your main browser
-              subprocess.getoutput(cmd=cmd)
-              log('Successful...', log=4)
+               """
+               Open url in main browser
+               DEFAULT BROWSER: Safari.
+               :param url: 'url'
+               :return: None
+               :param url: 
+               :return: 
+               """  # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
+               cmd = f'open /Applications/Safari.app {url}'  # Select your main browser
+               subprocess.getoutput(cmd=cmd)
+               log('Successful...', log=4)
 
 
      class Sound(object):
@@ -656,8 +676,10 @@ if sys.platform == 'darwin':
                subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
                                         '/System/Library/Sounds/Sosumi.aiff -v 10; done' % iters)
 
+
      class AppConfigure(object):
           """App-settings"""
+
           def get_app_size(self, app_name):
                """
                Return size of app by him name.
@@ -665,19 +687,24 @@ if sys.platform == 'darwin':
                :return: Size in megabytes/gigabytes
                """
                path = f'du -sh /Applications/{app_name}.app'
-               if  subprocess.getstatusoutput(cmd=path)[0] == 1:
+               if subprocess.getstatusoutput(cmd=path)[0] == 1:
                     raise ApplicationNameError
                else:
-                   return subprocess.getoutput(cmd=path)
+                    return subprocess.getoutput(cmd=path)
+
           def get_full_path_by_app_name(self, app):
-               if subprocess.getstatusoutput(cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[0] == 1:
+               if subprocess.getstatusoutput(
+                       cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[
+                    0] == 1:
                     raise ApplicationNotExist
                else:
-                   return subprocess.getoutput(cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
+                    return subprocess.getoutput(
+                         cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
+
+
      class FileConfig(object):
           def __init__(self):
-              self.size = subprocess.getoutput(f'du -sh %')
-
+               self.size = subprocess.getoutput(f'du -sh %')
 
           def get_date_last_change_file(self, path):
                """
@@ -685,7 +712,7 @@ if sys.platform == 'darwin':
                :param path:
                :return:
                """
-               self.clock = ctime(path.getctime(f'{path}'))
+               self.clock = ctime(path.getctime(f'%s'))
                return self.clock
 
           def get_file_size(self, path):
@@ -696,9 +723,11 @@ if sys.platform == 'darwin':
                """
 
                return [self.size % path]
+
           @classmethod
           def extension(cls, path):
                return str(path).split('.')[-1]
+
 
      class Volume(object):
           def __init__(self):
@@ -706,6 +735,7 @@ if sys.platform == 'darwin':
                self.volume = 'osascript -e "set Volume %s"'
                self.max_volume = 'osascript -e "set Volume 10"'
                self.min_volume = 'osascript -e "set Volume 0"'
+
           def set_volume(self, volume):
 
                subprocess.getoutput(cmd=self.volume % volume)
@@ -713,6 +743,7 @@ if sys.platform == 'darwin':
                     raise ValueError
                else:
                     return 'Successful...'
+
           def set_max_volume(self):
                subprocess.getoutput(cmd=self.max_volume)
                return 'Successful...'
@@ -722,24 +753,29 @@ if sys.platform == 'darwin':
                return 'Successful...'
 
 
-     class ScreenVideoCapture(object):
+     class WebCameraCapture(object):
           """Collect data in camera"""
+
           def __init__(self):
-               
-               self.cmd = f'/opt/local/bin/ffmpeg -t %s -f avfoundation -framerate %s -i "%s" -target pal-vcd ./%s.%s'
-          
-          def webcam_capture(self, record_time: int, camera_index, filename, extension, speed):
+               self.cmd = '/opt/local/bin/ffmpeg -f avfoundation -t %s -framerate 30 -i "%s" -target pal-vcd ./%s.%s'
+               self.devises = '[' + str(subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[-1])
+
+
+          def webcam_capture(self, record_time: int, camera_index, filename, extension):
                """
-               
+               Record video in webcam
                :param record_time: Recording time(seconds)
                :param camera_index: Camera index
                :param filename: Name of created file
                :param extension: Extension of file
-               :param speed: Speed-recording , available [10, 20, 30, 40]
-               :return: ...
+               :return: [None]
                """
-               subprocess.getoutput(
-                    cmd=self.cmd % (record_time,speed, camera_index, filename, extension))
+
+               subprocess.getoutput(cmd=self.cmd % (record_time, camera_index, filename, extension))
+               if os.path.isfile(f'{filename}.{extension}'):
+                    raise  FileExistsError(f'Please, rename file {filename}.{extension}, him already exist.')
+               else:
+                   return 'Check file is %s.%s' % (filename, extension)
 
           @property
           def list_devises(self):
@@ -747,17 +783,14 @@ if sys.platform == 'darwin':
                Return all available devises for recording audio/video.
                :return: Devises
                """
-               devises = '[' + str(
-                    subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split(
-                         '[', maxsplit=1)[-1])
-               return devises.strip()
+
+               return self.devises.strip().split(': ')[0].strip()
 
 
 
 elif sys.platform == 'win32':
      raise OSError('Windows version will be created soon...')
 
-
 if __name__ == '__main__':
-     exit(1)
+     exit(0)
 
