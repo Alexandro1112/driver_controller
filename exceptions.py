@@ -1,7 +1,7 @@
 """
-|---------------------|
-|Individual exceptions for methods|
-|---------------------|
+
+Individual exceptions for pyTerminalproccesosx
+
 """
 class ApplicationNameError(NameError):
      """
@@ -61,3 +61,7 @@ class WifiValueError(ValueError, BaseException):
     """
     There is no wi-fi network in util "bunch keys".
     """
+
+
+class ExtensionError(ValueError):
+     pass
