@@ -4,7 +4,7 @@
 Hello everyone!This module will help you change brightness, output , connecting to wifi-network, bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need. For start work with this library need install by using 
 # Installation
-<p> git clone https://github.com/Alexandro1112/pyTerminalproccesosx/<p>
+<p> git clone https://github.com/Alexandro1112/pyTerminalproccesosx<p>
      <h3>After, import them. Explore main abillity this library. <h3>
      
 # Lets try outputting all bluetooth/microphones in python.
@@ -57,7 +57,7 @@ pyTerminalproccesosx.Notifier().send_lateral_message(label='<YOUR_LABEL>',
 ``` 
 import pyTerminalproccesosx
 
-print(pyTerminalproccesosx.Clicker().press(button='a', register=pyTerminalproccesosx.UPPER.UPPER))
+print(pyTerminalproccesosx.Clicker().press(button='a')
 ``` 
      
 # Set brightness of screen.
@@ -86,6 +86,14 @@ import pyTerminalproccesosx
 
 print(pyTerminalproccesosx.ScreenCapture().screenshot(filename='screenshot', extension='jpg', pause=2))
 ``` 
+#  Create photo in your webcam
+``` 
+import pyTerminalproccesosx
+pyTerminalproccesosx.PhotoCapture().capture(cam_index=0,
+                                            filename='<NAME_OF_FILE',
+                                            extension='<FILE_EXTENSION>')
+``` 
+
 
 <h1> That was main methods this python library. Exist even linux version.<h1>
 
