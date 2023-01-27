@@ -88,4 +88,4 @@ print(pyTerminalproccesosx.ScreenCapture().screenshot(filename='screenshot', ext
 ``` 
 
 <h1> That was main methods this python library. Exist even linux version.<h1>
-<a href="/Users/admin/PycharmProjects/ziptest/pyTerminalproccesosx__/dist/pyTerminalproccesosx-0.1.0.tar.gz" download>Download for mac/linux</a>
+
