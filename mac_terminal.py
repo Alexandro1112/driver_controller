@@ -15,11 +15,11 @@
 # INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
 # REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil ||
-# brew install ffmpeg OR sudo port install ffmpeg ||
+# brew install ffmpeg OR sudo port install ffmpeg || if "command port not founded: then:
 #                                               ||PORT-INSTALLATION ||
 # I COMMAND - [export PATH=/opt/local/bin:/opt/local/sbin:$PATH]
 # II COMMAND - [export DISPLAY=:0.0]
-# III COMMAND - [port]
+# III COMMAND - [port](Successful installed port)
 # |---------------------------------------------------------------------------------------------------------------------|
 #  Any files which already installed in
 #  OS Mac in System files, if they not exist - code will not working.
@@ -33,6 +33,7 @@
 # How check this?
 # Finder -> Go -> Go to folder -> /System/
 # input the file-path which I wrote.
+# TODO: Make more classes
 #                                            Finally, run code.
 
 # for full paths
@@ -43,10 +44,10 @@ import subprocess
 import sys
 # Unplug warnings, unexpected errors
 from warnings import filterwarnings
-
 from shutup import please
+
 # pause for methods
-from time import sleep
+from time import sleep, ctime
 # for get list applications
 from psutil import process_iter
 # Constants
@@ -59,25 +60,28 @@ from sounddevice import query_devices
 # Exceptions for methods
 from .exceptions import *
 
+
 __all__ = ['PasswordManager', 'WifiValueError', 'WifiNameConnectError',
            'ValueBrightnessError', 'InvalidExtension', 'Sound', 'AppSystem', 'Open',
            'Clicker', 'SystemConfig', 'OutputListsDevises', 'Brightness', 'Switching', 'Notifier',
            'Connector'
      , 'Creator', "VoiceOver", 'ScreenCapture', 'PhotoCapture', "AudioRecorder", 'UnsupportedFormat', 'CONSTANT_SOUNDS',
-           'AppConfigure'
+           'AppConfigure', 'FileConfig', 'Volume', 'ScreenVideoCapture', 'ExtensionError', 'ApplicationNotExist',
            ]
 
 if sys.platform == 'darwin':
 
      class OutputListsDevises(object):
           """ Return output devises """
+          def __init__(self):
+               self.scan_cmd = subprocess.Popen(['airport', '-s'], stdout=subprocess.PIPE,stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
+               self.bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
+               self.devises = query_devices()
+
 
           def get_list_wifi_networks(self):
                """ Function output all wi-fi networks,
                   which available for your devise."""
-
-               self.scan_cmd = subprocess.Popen(['airport', '-s'], stdout=subprocess.PIPE,
-                                                stderr=subprocess.STDOUT)
                scan_out, scan_err = self.scan_cmd.communicate()
                scan_out_data = dict()
                scan_out_lines = str(scan_out).split("\\n")[1:-1]
@@ -90,13 +94,13 @@ if sys.platform == 'darwin':
 
                for names in names_.values():
                     self.networks = list(names.values())[0]
-                    print(self.networks.split())
+                    print(self.networks) if not self.networks.strip() == '' else None
 
           def get_list_bluetooth_device(self):
                """ Function output all bluetooth devise(s),
              which available for your devise."""
-               self.bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
-               return self.bluetooth.split('Bluetooth:')[0]
+
+               return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() == '' else None
 
           def get_list_audio_devises(self):
                """
@@ -106,13 +110,13 @@ if sys.platform == 'darwin':
             (Available only on Mac-os)
             """
 
-               self.devises = query_devices()
-               return self.devises
+               return self.devises if not self.devises.strip() == '' else None
 
 
      class Connector(object):
           """Connect to wi-fi networks"""
-          def connect_wifi_network(self, wifi_network, password):
+          @staticmethod
+          def connect_wifi_network(wifi_network, password):
                """
             Auto connect to wi-fi network.
 
@@ -223,14 +227,9 @@ if sys.platform == 'darwin':
           def __init__(self):
                self.percent = subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";", r"")
                self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
-               airport = pathlib.Path(
-                    "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
-
-               self.network = subprocess.getoutput(
-                    cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
-               self.size = \
-               subprocess.getoutput('system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(
-                    ' ')
+               airport = pathlib.Path("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
+               self.network = subprocess.getoutput(cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
+               self.size = subprocess.getoutput('system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
                self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                del self.size[0], self.size[-1]
 
@@ -380,9 +379,11 @@ if sys.platform == 'darwin':
 
 
      class ScreenCapture(object):
-          """Make screenshot with settings"""
+          """Make screenshot/video with settings"""
           def __init__(self):
                self.AVAILABLE_EXTENSIONS = ('png', 'jpg', 'icns', 'gif', 'pict', 'eps')
+               self.command = '/opt/local/bin/ffmpeg -f avfoundation -t %s -framerate 10 -video_size 640x480 -i "%s:%s" %s.%s'
+
 
           def screenshot(self, filename, extension, pause=None):
                """
@@ -413,6 +414,43 @@ if sys.platform == 'darwin':
                    log('Unsupported format', level=3)
                    raise UnsupportedFormat(
                          "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
+          def screen_capture(self, record_time: int, filename, extensions,   microphone_index=0, camera_index=0) -> [int, int, int]:
+               """
+               ScreenCapture - create video with voice, of your screen.
+               :param record_time: Record time
+               :param filename: Name of created file
+               :param extensions: Extensions
+               :param microphone_index: Microphone index, that is mean microphone, which will be used in video
+               :param camera_index: Camera index
+               :return:
+               """
+               return subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg -f avfoundation -r {record_time} -s 1280x720 -i "{microphone_index}:{camera_index}"  {filename}.{extensions}')
+
+          def video_capture(self, record_time, camera_index, microphone_index, filename, extension):
+               """
+               Capture screen-video, click [q] for end video, and save them.
+               :param camera_index: Camera index where will be collected vide0
+               :param microphone_index: Microphone index, which used in video
+               :param filename: Name of file
+               :param extension: File Extension
+               :param record_time time of recording
+               :return:
+               """
+               subprocess.getoutput(
+                    cmd=self.command % (record_time, camera_index, microphone_index, filename, extension))
+               if ord('q'):
+                    return
+
+          @property
+          def list_devises(self):
+               """
+               Return all available devises for recording audio/video.
+               :return:
+               """
+               devises = '[' + str(
+                    subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split(
+                         '[', maxsplit=1)[-1])
+               return devises.strip()
 
 
      class PhotoCapture(object):
@@ -427,8 +465,10 @@ if sys.platform == 'darwin':
             """
                subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg  -f avfoundation -video_size {1280}x{720}'
                                         f' -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
-
-               return 'Successful...'
+               if subprocess.getstatusoutput(cmd=f'/opt/local/bin/ffmpeg  -f avfoundation -video_size {1280}x{720} -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')[0] == 1:
+                    raise ExtensionError
+               else:
+                   return 'Successful...'
 
 
      class AudioRecorder(object):
@@ -460,6 +500,8 @@ if sys.platform == 'darwin':
 
 
      class AppSystem(object):
+          def __init__(self):
+               self.apps = process_iter()
           def is_exist(self, application_name):
                """
             Check of existing of app({application_name})
@@ -467,7 +509,7 @@ if sys.platform == 'darwin':
             :return: [True] if application
             exist on your devise, [False] - if no.
             """
-               return bool(application_name in (i.name() for i in process_iter()))
+               return bool(application_name in (i.name() for i in self.apps))
 
           def close_app(self, application_name):
                """
@@ -627,6 +669,88 @@ if sys.platform == 'darwin':
                     raise ApplicationNameError
                else:
                    return subprocess.getoutput(cmd=path)
+          def get_full_path_by_app_name(self, app):
+               if subprocess.getstatusoutput(cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[0] == 1:
+                    raise ApplicationNotExist
+               else:
+                   return subprocess.getoutput(cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
+     class FileConfig(object):
+          def __init__(self):
+              self.size = subprocess.getoutput(f'du -sh %')
+
+
+          def get_date_last_change_file(self, path):
+               """
+               Return time, when file was used.
+               :param path:
+               :return:
+               """
+               self.clock = ctime(path.getctime(f'{path}'))
+               return self.clock
+
+          def get_file_size(self, path):
+               """
+               Return size of file.
+               :param path: Path to file
+               :return:
+               """
+
+               return [self.size % path]
+          @classmethod
+          def extension(cls, path):
+               return str(path).split('.')[-1]
+
+     class Volume(object):
+          def __init__(self):
+
+               self.volume = 'osascript -e "set Volume %s"'
+               self.max_volume = 'osascript -e "set Volume 10"'
+               self.min_volume = 'osascript -e "set Volume 0"'
+          def set_volume(self, volume):
+
+               subprocess.getoutput(cmd=self.volume % volume)
+               if subprocess.getstatusoutput(cmd=self.volume % volume)[0] == 1:
+                    raise ValueError
+               else:
+                    return 'Successful...'
+          def set_max_volume(self):
+               subprocess.getoutput(cmd=self.max_volume)
+               return 'Successful...'
+
+          def set_min_volume(self):
+               subprocess.getoutput(cmd=self.min_volume)
+               return 'Successful...'
+
+
+     class ScreenVideoCapture(object):
+          """Collect data in camera"""
+          def __init__(self):
+               
+               self.cmd = f'/opt/local/bin/ffmpeg -t %s -f avfoundation -framerate %s -i "%s" -target pal-vcd ./%s.%s'
+          
+          def webcam_capture(self, record_time: int, camera_index, filename, extension, speed):
+               """
+               
+               :param record_time: Recording time(seconds)
+               :param camera_index: Camera index
+               :param filename: Name of created file
+               :param extension: Extension of file
+               :param speed: Speed-recording , available [10, 20, 30, 40]
+               :return: ...
+               """
+               subprocess.getoutput(
+                    cmd=self.cmd % (record_time,speed, camera_index, filename, extension))
+
+          @property
+          def list_devises(self):
+               """
+               Return all available devises for recording audio/video.
+               :return: Devises
+               """
+               devises = '[' + str(
+                    subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split(
+                         '[', maxsplit=1)[-1])
+               return devises.strip()
 
 
 
