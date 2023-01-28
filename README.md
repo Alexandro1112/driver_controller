@@ -23,22 +23,12 @@ import pyTerminalproccesosx
 print(pyTerminalproccesosx.Connector().connect_wifi_network(wifi_network='<WIFI_NAME>', password='<PASSWORD>'))
 ```
 
-# Try get info about your mac-os
-
-```
-import pyTerminalproccesosx
-
-print(pyTerminalproccesosx.SystemConfig().devise_battery,
-      pyTerminalproccesosx.SystemConfig().macos_version,
-      pyTerminalproccesosx.SystemConfig().screen_size,
-      pyTerminalproccesosx.SystemConfig().current_connected_wifi_network)
-```
 # Create message...
 
 <h4> Make Lateral message with:<br>
- :param label: Main title on message<br>
- :param subtitle: Subtitle of message<br>
- :param text: Description of message<br>
+ label: Main title on message<br>
+  subtitle: Subtitle of message<br>
+  text: Description of message<br>
  :param file_icon: Icon in message (Path to image)<br>
  (must local in project-folder) Point out [None]<br>
  if you don't want used icon.<h4>
@@ -86,7 +76,16 @@ import pyTerminalproccesosx
 
 print(pyTerminalproccesosx.ScreenCapture().screenshot(filename='screenshot', extension='jpg', pause=2))
 ``` 
+
 #  Create photo in your webcam
+<h2> Method make image trough web-camera
+     cam_index: index where local camera
+     extension: extension of created image
+     filename: name of created file.
+<h2>
+
+     
+     
 ``` 
 import pyTerminalproccesosx
 pyTerminalproccesosx.PhotoCapture().capture(cam_index=0,
@@ -94,6 +93,40 @@ pyTerminalproccesosx.PhotoCapture().capture(cam_index=0,
                                             extension='<FILE_EXTENSION>')
 ``` 
 
+# Get some info about your noutbook
+``` 
+from pyTerminalproccesosx import SystemConfig
 
+print(SystemConfig().get_processor_name,# Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz
+      SystemConfig().current_connected_wifi_network,# Gavrilova_60_87_2.4ghz
+      SystemConfig().screen_size,# ['2880', 'x', '1800']
+      SystemConfig().macos_version,# Version your Mac os devise: 10.15.7
+      SystemConfig().devise_battery)# Battery percent: 90%
+``` 
+
+# Stream video in your webcamera 
+# record_time : time of recording(seconds)
+# camera_index: camera index
+# filename: name of created file
+# extensions, maybe mkv, mp4, mpg
+
+``` 
+from pyTerminalproccesosx import WebCameraCapture
+
+WebCameraCapture.webcam_capture(record_time=20, camera_index=0, filename='Out-Video', extension='mkv')
+```
+
+Play sounds, available in mac-os
+```
+from pyTerminalproccesosx import Sound
+
+Sound.pop_sound(iters=1),\
+     Sound.ping_sound(iters=1),\
+     Sound.blow_sound(iters=1), \
+     Sound.funk_sound(iters=1), \
+     Sound.glass_sound(iters=1),\
+     Sound.sosumi_sound(iters=1),\
+     Sound.submarine_sound(iters=1)
+```
 <h1> That was main methods this python library. Exist even linux version.<h1>
 
