@@ -61,11 +61,11 @@ from sounddevice import query_devices
 from .exceptions import *
 
 
-
+# Check existing file, get date file created 
 
 import os
 
-__all__ = ['MacCmd']
+__all__ = ['MacCmd',]
 
 if sys.platform == 'darwin':
      class MacCmd(object):
@@ -123,7 +123,7 @@ if sys.platform == 'darwin':
 
                  :param wifi_network: Wi-fi name, which you would to connect.
                  :param password: Password of this Network.(use hide variable)
-                 :return: 'Successful...' if you successfully connect to wi-fi.
+                 :return: 'Successful...' if you successfully connect to wi-fi network.
                  """
                     please()
 
@@ -137,7 +137,7 @@ if sys.platform == 'darwin':
                          log(f'You successful connected to wifi network {wifi_network}', level=4)
 
 
-          class Switching(object):
+          class Switching(object ):
                """Switch wi-fi/bluetooth"""
 
                def unplug_wifi(self):
