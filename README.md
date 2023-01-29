@@ -36,7 +36,7 @@ print(pyTerminalproccesosx.Connector().connect_wifi_network(wifi_network='<WIFI_
 ```
 import pyTerminalproccesosx
 
-pyTerminalproccesosx.MacCMd().Notifier().send_lateral_message(label='<YOUR_LABEL>',
+pyTerminalproccesosx.MacCmd().Notifier().send_lateral_message(label='<YOUR_LABEL>',
                                                      subtitle='<YOUR_SUBTITLE>',
                                                      text='<TEXT>', file_icon='<FILE_ICON>',
                                                      sound=pyTerminalproccesosx.CONSTANT_SOUNDS.Popsound)
@@ -128,5 +128,7 @@ Sound.pop_sound(iters=1),\
      MacCmd().Sound.sosumi_sound(iters=1),\
      MacCmd().Sound.submarine_sound(iters=1)
 ```
+
+# 
 <h1> That was main methods this python library. Exist even linux version.<h1>
 
