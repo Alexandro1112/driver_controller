@@ -1,5 +1,5 @@
 __all__ = [
-     'UPPER', 'LOWER', "CONSTANT_SOUNDS"
+    "CONSTANT_SOUNDS"
 ]
 
 
