@@ -51,7 +51,7 @@ from time import sleep, ctime
 # for get list applications
 from psutil import process_iter
 # Constants
-from .CONSTANTS import Constants
+from .CONSTANTS import CONSTANT_SOUNDS
 # Log-alerts
 from loger import *
 # Sound-devises
@@ -132,7 +132,7 @@ if sys.platform == 'darwin':
                          cmd=f'networksetup -setairportnetwork en0 {wifi_network} {password}')
                     if connect_GADGET.strip() != '':
                          filterwarnings('ignore', category=DeprecationWarning and FutureWarning)
-                         raise Exceptions.WifiNameConnectError(f'Could not find network {wifi_network}')
+                         raise WifiNameConnectError(f'Could not find network {wifi_network}')
 
                     else:
                          log(f'You successful connected to wifi network {wifi_network}', level=4)
@@ -195,7 +195,7 @@ if sys.platform == 'darwin':
                  """
 
                     if not isinstance(brightness_percent, int):
-                         raise Exceptions.ValueBrightnessError('Type value of brightness must be ', int)
+                         raise ValueBrightnessError('Type value of brightness must be ', int)
 
                     else:
                          if brightness_percent == 100:
@@ -347,7 +347,7 @@ if sys.platform == 'darwin':
                                                                      'framework/Versions/A/Resources/airport scan') or subprocess.getstatusoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')[0]==0:
                          return password.strip()
                     else:
-                        raise Exceptions.WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)}')
+                        raise WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)}')
 
           class Notifier(object):
                """Send different alerts"""
@@ -370,7 +370,7 @@ if sys.platform == 'darwin':
                           f'buttons {repr(buttons1), repr(button2)} with icon stop\''
                     subprocess.getoutput(cmd=cmd)
 
-               def send_lateral_message(self, label, subtitle, text, file_icon: [None, str], sound: [None, Constants.CONSTANT_SOUNDS]):
+               def send_lateral_message(self, label, subtitle, text, file_icon: [None, str], sound: [None, CONSTANT_SOUNDS]):
                     """
                   Make Lateral message with:
                   :param label: Main title on message
@@ -448,7 +448,7 @@ if sys.platform == 'darwin':
                          [Format unsupported]
                          """
                          log('Unsupported format', level=3)
-                         raise Exceptions.UnsupportedFormat(
+                         raise UnsupportedFormat(
                               "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
 
 
@@ -526,7 +526,7 @@ if sys.platform == 'darwin':
 
 
                     else:
-                         raise Exceptions.UnsupportedFormat('Method can make files only with extensions (\'wav', 'mp3\')')
+                         raise UnsupportedFormat('Method can make files only with extensions (\'wav', 'mp3\')')
 
 
 
@@ -576,7 +576,7 @@ if sys.platform == 'darwin':
                  """
                     cmd = subprocess.getoutput(cmd=f'open -F -a "{path_app}"')
                     if cmd.strip() != '':
-                         raise Exceptions.ApplicationNotExist('Application %s not exist' % path_app)
+                         raise ApplicationNotExist('Application %s not exist' % path_app)
 
                     else:
                          return 'Successful...'
@@ -701,7 +701,7 @@ if sys.platform == 'darwin':
                     """
                     path = f'du -sh /Applications/{app_name}.app'
                     if subprocess.getstatusoutput(cmd=path)[0] == 1:
-                         raise Exceptions.ApplicationNameError
+                         raise ApplicationNameError
                     else:
                          return subprocess.getoutput(cmd=path)
 
@@ -709,7 +709,7 @@ if sys.platform == 'darwin':
                     if subprocess.getstatusoutput(
                             cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[
                          0] == 1:
-                         raise Exceptions.ApplicationNotExist
+                         raise ApplicationNotExist
                     else:
                          return subprocess.getoutput(
                               cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
