@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from .exceptions import Exceptions
+from .exceptions import *
 from loger import *
 from time import sleep
 from psutil import process_iter
@@ -126,7 +126,7 @@ if sys.platform == 'linux':
                         [Format unsupported]
                         """
                         log('Unsupported format', level=3)
-                        raise Exceptions.UnsupportedFormat(
+                        raise UnsupportedFormat(
                              "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
 
               def video_capture(self, record_time, camera_index, microphone_index, filename, extension):
@@ -204,7 +204,7 @@ if sys.platform == 'linux':
 
 
                    else:
-                        raise Exceptions.UnsupportedFormat('Method can make files only with extensions (\'wav',
+                        raise UnsupportedFormat('Method can make files only with extensions (\'wav',
                                                            'mp3\')')
 
          class AppSystem(object):
@@ -262,7 +262,5 @@ if sys.platform == 'linux':
                    return 'Successful...'
 
 
-
-
 else:
-    raise NotImplementedError
+    raise NotImplementedError('')
