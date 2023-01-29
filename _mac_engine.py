@@ -12,10 +12,10 @@
 # II COMMAND = [ pip3 install plyer]
 # III COMMAND = [ pip3 install sounddevice]
 # If code not working, though git submodules exist in git-hub repository: complete few commands:
-# INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
-# REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
+# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil ||
-# brew install ffmpeg OR sudo port install ffmpeg || if "command port not founded: then:
+# brew install ffmpeg OR sudo port install ffmpeg || if "command port not found: then:
 #                                               ||PORT-INSTALLATION ||
 # I COMMAND - [export PATH=/opt/local/bin:/opt/local/sbin:$PATH]
 # II COMMAND - [export DISPLAY=:0.0]
@@ -31,7 +31,7 @@
 #  /System/Library/Sounds/Submarine.aiff ||
 #  /System/Library/Sounds/Sosumi.aiff ||
 # How check this?
-# Finder -> Go -> Go to folder -> /System/
+# Finder -> Go -> Go to folder -> /System/...
 # input the file-path which I wrote.
 # TODO: Make more classes
 #                                            Finally, run code.
@@ -65,8 +65,7 @@ from .exceptions import *
 
 import os
 
-__all__ = ['MacCmd'
-           ]
+__all__ = ['MacCmd']
 
 if sys.platform == 'darwin':
      class MacCmd(object):
@@ -181,9 +180,10 @@ if sys.platform == 'darwin':
 
 
           class Brightness(object):
+               """Set brightness"""
                def __init__(self):
                     self.get_cur_brightness_per = subprocess.getoutput(cmd='brightness -l')
-               """Set brightness"""
+
 
                def set_brightness(self, brightness_percent: int):
                     """
@@ -343,8 +343,8 @@ if sys.platform == 'darwin':
                   """
 
                     password = subprocess.getoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')
-                    if not name_wifi_network in subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.'
-                                                                     'framework/Versions/A/Resources/airport scan') or subprocess.getstatusoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')[0]==0:
+                    if  name_wifi_network in subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.'
+                                                                     'framework/Versions/A/Resources/airport scan') or subprocess.getstatusoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')[0]!=0:
                          return password.strip()
                     else:
                         raise WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)}')
@@ -365,10 +365,8 @@ if sys.platform == 'darwin':
                     subprocess.getoutput(cmd=cmd)
 
                def send_warning_alert(self, labeltext, buttons1, button2):
-                    cmd = 'osascript -e \'tell application (path to frontmost ' \
-                          f'application as text) to display dialog "{labeltext}" ' \
-                          f'buttons {repr(buttons1), repr(button2)} with icon stop\''
-                    subprocess.getoutput(cmd=cmd)
+                    cmd = 'osascript -e \'tell application (path to frontmost application as text) to display dialog "%s" buttons {"%s", "%s"} with icon stop\'' % (labeltext, buttons1, button2)
+                    return subprocess.getoutput(cmd=cmd)
 
                def send_lateral_message(self, label, subtitle, text, file_icon: [None, str], sound: [None, CONSTANT_SOUNDS]):
                     """
@@ -448,8 +446,7 @@ if sys.platform == 'darwin':
                          [Format unsupported]
                          """
                          log('Unsupported format', level=3)
-                         raise UnsupportedFormat(
-                              "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
+                         raise UnsupportedFormat("Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
 
 
                def video_capture(self, record_time, camera_index, microphone_index, filename, extension):
@@ -588,9 +585,9 @@ if sys.platform == 'darwin':
                     DEFAULT BROWSER: Safari.
                     :param url: 'url'
                     :return: None
-                    :param url: 
-                    :return: 
-                    """  # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
+                    :param url:
+                    """
+                    # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
                     cmd = f'open /Applications/Safari.app {url}'  # Select your main browser
                     subprocess.getoutput(cmd=cmd)
                     log('Successful...', log=4)
@@ -757,7 +754,6 @@ if sys.platform == 'darwin':
                     self.output_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[1].replace(',', '')
 
                def set_volume(self, volume):
-
                     subprocess.getoutput(cmd=self.volume % volume)
                     if subprocess.getstatusoutput(cmd=self.volume % volume)[0] == 1:
                          raise ValueError
@@ -788,6 +784,8 @@ if sys.platform == 'darwin':
                     :return: 
                     """
                     return self.input_volume
+
+
 
 
           class WebCameraCapture(object):
