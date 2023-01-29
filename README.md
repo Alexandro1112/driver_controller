@@ -36,7 +36,7 @@ print(pyTerminalproccesosx.Connector().connect_wifi_network(wifi_network='<WIFI_
 ```
 import pyTerminalproccesosx
 
-pyTerminalproccesosx.Notifier().send_lateral_message(label='<YOUR_LABEL>',
+pyTerminalproccesosx.MacCMd().Notifier().send_lateral_message(label='<YOUR_LABEL>',
                                                      subtitle='<YOUR_SUBTITLE>',
                                                      text='<TEXT>', file_icon='<FILE_ICON>',
                                                      sound=pyTerminalproccesosx.CONSTANT_SOUNDS.Popsound)
@@ -47,7 +47,7 @@ pyTerminalproccesosx.Notifier().send_lateral_message(label='<YOUR_LABEL>',
 ``` 
 import pyTerminalproccesosx
 
-print(pyTerminalproccesosx.Clicker().press(button='a')
+print(pyTerminalproccesosx.MacCmd().Clicker().press(button='a')
 ``` 
      
 # Set brightness of screen.
@@ -56,7 +56,7 @@ print(pyTerminalproccesosx.Clicker().press(button='a')
 ``` 
 import pyTerminalproccesosx
 
-print(pyTerminalproccesosx.Brightness().set_brightness(number))
+print(pyTerminalproccesosx.MacCmd().Brightness().set_brightness(number))
 ``` 
 
 # Enable/unplug wifi/bluetooth.
@@ -64,17 +64,17 @@ print(pyTerminalproccesosx.Brightness().set_brightness(number))
      
 import pyTerminalproccesosx
 
-print(pyTerminalproccesosx.Switching().enable_wifi(),
-      pyTerminalproccesosx.Switching().unplug_wifi(),
-      pyTerminalproccesosx.Switching().enable_bluetooth(),
-      pyTerminalproccesosx.Switching().unplug_bluetooth())
+print(pyTerminalproccesosx.MacCmd().Switching().enable_wifi(),
+      pyTerminalproccesosx.MacCmd().Switching().unplug_wifi(),
+      pyTerminalproccesosx.MacCmd().Switching().enable_bluetooth(),
+      pyTerminalproccesosx.MacCmd().Switching().unplug_bluetooth())
 ``` 
 # Try make Screenshot.
      
 ``` 
 import pyTerminalproccesosx
 
-print(pyTerminalproccesosx.ScreenCapture().screenshot(filename='screenshot', extension='jpg', pause=2))
+print(pyTerminalproccesosx.MacCmd().ScreenCapture().screenshot(filename='screenshot', extension='jpg', pause=2))
 ``` 
 
 #  Create photo in your webcam
@@ -88,20 +88,20 @@ print(pyTerminalproccesosx.ScreenCapture().screenshot(filename='screenshot', ext
      
 ``` 
 import pyTerminalproccesosx
-pyTerminalproccesosx.PhotoCapture().capture(cam_index=0,
+pyTerminalproccesosx.MacCmd().PhotoCapture().capture(cam_index=0,
                                             filename='<NAME_OF_FILE',
                                             extension='<FILE_EXTENSION>')
 ``` 
 
 # Get some info about your noutbook
 ``` 
-from pyTerminalproccesosx import SystemConfig
+from pyTerminalproccesosx import MacCmd
 
-print(SystemConfig().get_processor_name,# Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz
-      SystemConfig().current_connected_wifi_network,# Gavrilova_60_87_2.4ghz
-      SystemConfig().screen_size,# ['2880', 'x', '1800']
-      SystemConfig().macos_version,# Version your Mac os devise: 10.15.7
-      SystemConfig().devise_battery)# Battery percent: 90%
+print(MacCmd().SystemConfig().get_processor_name,# Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz
+      MacCmd().SystemConfig().current_connected_wifi_network,# Gavrilova_60_87_2.4ghz
+      MacCmd().SystemConfig().screen_size,# ['2880', 'x', '1800']
+      MacCmd().SystemConfig().macos_version,# Version your Mac os devise: 10.15.7
+     MacCmd(). SystemConfig().devise_battery)# Battery percent: 90%
 ``` 
 
 # Stream video in your webcamera 
@@ -111,22 +111,22 @@ print(SystemConfig().get_processor_name,# Intel(R) Core(TM) i7-4850HQ CPU @ 2.30
 # extensions, maybe mkv, mp4, mpg
 
 ``` 
-from pyTerminalproccesosx import WebCameraCapture
+from pyTerminalproccesosx import MacCmd
 
-WebCameraCapture.webcam_capture(record_time=20, camera_index=0, filename='Out-Video', extension='mkv')
+MacCmd().WebCameraCapture.webcam_capture(record_time=20, camera_index=0, filename='Out-Video', extension='mkv')
 ```
 
 Play sounds, available in mac-os
 ```
-from pyTerminalproccesosx import Sound
+from pyTerminalproccesosx import MacCmd
 
 Sound.pop_sound(iters=1),\
-     Sound.ping_sound(iters=1),\
-     Sound.blow_sound(iters=1), \
-     Sound.funk_sound(iters=1), \
-     Sound.glass_sound(iters=1),\
-     Sound.sosumi_sound(iters=1),\
-     Sound.submarine_sound(iters=1)
+     MacCmd().Sound.ping_sound(iters=1),\
+     MacCmd().Sound.blow_sound(iters=1), \
+     MacCmd().Sound.funk_sound(iters=1), \
+     MacCmd().Sound.glass_sound(iters=1),\
+     MacCmd().Sound.sosumi_sound(iters=1),\
+     MacCmd().Sound.submarine_sound(iters=1)
 ```
 <h1> That was main methods this python library. Exist even linux version.<h1>
 
