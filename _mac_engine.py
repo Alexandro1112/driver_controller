@@ -60,9 +60,13 @@ from sounddevice import query_devices
 # Exceptions for methods
 from .exceptions import *
 
+
+
+
 import os
 
-__all__ = ['MacCmd',]
+__all__ = ['MacCmd'
+           ]
 
 if sys.platform == 'darwin':
      class MacCmd(object):
@@ -350,7 +354,7 @@ if sys.platform == 'darwin':
                """Send different alerts"""
                def __init__(self):
                    self.cmd = 'osascript -e \'tell application (path to frontmost application as text) to display dialog "%s" buttons {"%s", "%s"} with icon stop\''
-               
+
 
                def send_text_alert(self, text):
                     """
@@ -526,8 +530,6 @@ if sys.platform == 'darwin':
 
                               return 'Check file is %s.%s' % (filename, extension)
 
-
-
                     else:
                          raise UnsupportedFormat('Method can make files only with extensions (\'wav', 'mp3\')')
 
@@ -560,8 +562,14 @@ if sys.platform == 'darwin':
 
 
           class Clicker(object):
+               """Clicker"""
                @staticmethod
                def press(key):
+                    """
+                    Press on keys
+                    :param key: Button
+                    :return:
+                    """
                     subprocess.getoutput(cmd='osascript -e \'tell application '
                                              '"System Events" to keystroke "%s" using {shift down}\'' % str(key).upper())
                     return 'Successful...'
@@ -801,7 +809,6 @@ if sys.platform == 'darwin':
                     self.cmd = '/opt/local/bin/ffmpeg -f avfoundation -t %s -framerate 30 -i "%s" -target pal-vcd ./%s.%s'
                     self.devises = '[' + str(subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[-1])
 
-
                def webcam_capture(self, record_time: int, camera_index, filename, extension):
                     """
                     Record video in webcam
@@ -813,10 +820,8 @@ if sys.platform == 'darwin':
                     """
 
                     subprocess.getoutput(cmd=self.cmd % (record_time, camera_index, filename, extension))
-                    if os.path.isfile(f'{filename}.{extension}'):
-                         raise  FileExistsError(f'Please, rename file {filename}.{extension}, him already exist.')
-                    else:
-                        return 'Check file is %s.%s' % (filename, extension)
+                    
+                    return 'Check file is %s.%s' % (filename, extension)
 
                @property
                def list_devises(self):
@@ -835,3 +840,4 @@ elif sys.platform == 'win32':
 if __name__ == '__main__':
      exit(0)
 
+# end.
