@@ -19,10 +19,10 @@ elif platform == 'darwin':
 
 else:
 
-    raise OSError('While, platform support only on ma/Linux os')
+    raise OSError('While, platform support only on mac/Linux os')
 
 
-    
+
 
 
 # -------------------------- #
