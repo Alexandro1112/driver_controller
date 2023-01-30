@@ -12,10 +12,10 @@
 # II COMMAND = [ pip3 install plyer]
 # III COMMAND = [ pip3 install sounddevice]
 # If code not working, though git submodules exist in git-hub repository: complete few commands:
-# /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
-# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
+# REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil ||
-# brew install ffmpeg OR sudo port install ffmpeg || if "command port not found: then:
+# brew install ffmpeg OR sudo port install ffmpeg || if "command port not founded: then:
 #                                               ||PORT-INSTALLATION ||
 # I COMMAND - [export PATH=/opt/local/bin:/opt/local/sbin:$PATH]
 # II COMMAND - [export DISPLAY=:0.0]
@@ -31,7 +31,7 @@
 #  /System/Library/Sounds/Submarine.aiff ||
 #  /System/Library/Sounds/Sosumi.aiff ||
 # How check this?
-# Finder -> Go -> Go to folder -> /System/...
+# Finder -> Go -> Go to folder -> /System/
 # input the file-path which I wrote.
 # TODO: Make more classes
 #                                            Finally, run code.
@@ -59,9 +59,6 @@ from sounddevice import query_devices
 
 # Exceptions for methods
 from .exceptions import *
-
-
-# Check existing file, get date file created 
 
 import os
 
@@ -123,7 +120,7 @@ if sys.platform == 'darwin':
 
                  :param wifi_network: Wi-fi name, which you would to connect.
                  :param password: Password of this Network.(use hide variable)
-                 :return: 'Successful...' if you successfully connect to wi-fi network.
+                 :return: 'Successful...' if you successfully connect to wi-fi.
                  """
                     please()
 
@@ -137,7 +134,7 @@ if sys.platform == 'darwin':
                          log(f'You successful connected to wifi network {wifi_network}', level=4)
 
 
-          class Switching(object ):
+          class Switching(object):
                """Switch wi-fi/bluetooth"""
 
                def unplug_wifi(self):
@@ -351,6 +348,9 @@ if sys.platform == 'darwin':
 
           class Notifier(object):
                """Send different alerts"""
+               def __init__(self):
+                   self.cmd = 'osascript -e \'tell application (path to frontmost application as text) to display dialog "%s" buttons {"%s", "%s"} with icon stop\''
+               
 
                def send_text_alert(self, text):
                     """
@@ -364,9 +364,15 @@ if sys.platform == 'darwin':
                     cmd = f'osascript -e \'tell app "System Events" to display dialog "{text}"\''
                     subprocess.getoutput(cmd=cmd)
 
-               def send_warning_alert(self, labeltext, buttons1, button2):
-                    cmd = 'osascript -e \'tell application (path to frontmost application as text) to display dialog "%s" buttons {"%s", "%s"} with icon stop\'' % (labeltext, buttons1, button2)
-                    return subprocess.getoutput(cmd=cmd)
+               def send_warning_alert(self, labeltext, button1, button2):
+                    """
+                    Send notify-warning, with buttons.
+                    :param labeltext: Label
+                    :param button1: first button
+                    :param button2: second button
+                    :return: Value of brightness
+                    """
+                    return subprocess.getoutput(cmd=self.cmd % (labeltext, button1, button2)).split(':')[-1]
 
                def send_lateral_message(self, label, subtitle, text, file_icon: [None, str], sound: [None, CONSTANT_SOUNDS]):
                     """
