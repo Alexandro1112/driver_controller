@@ -129,6 +129,26 @@ Sound.pop_sound(iters=1),\
      MacCmd().Sound.submarine_sound(iters=1)
 ```
 
-# 
+# Practical application
+<p>Write code for check clicked determined button in alert.
+
+```
+import pyTerminalproccesosx._mac_engine
+choice  = pyTerminalproccesosx._mac_engine.MacCmd().Notifier().send_warning_alert(labeltext='Buy new mac?', button1='Yes', button2='No')
+if choice == 'Yes':
+     pyTerminalproccesosx.MacCmd().Notifier().send_text_alert('Thanks!')
+else:
+     print('Ok!')
+
+```
+# Set volume with input 
+
+```
+import pyTerminalproccesosx._mac_engine
+percent = int(input())
+
+pyTerminalproccesosx.MacCmd().Volume().set_volume(percent)
+```
 <h1> That was main methods this python library. Exist even linux version.<h1>
+
 
