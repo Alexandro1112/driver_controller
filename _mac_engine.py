@@ -95,13 +95,15 @@ if sys.platform == 'darwin':
 
                     for names in names_.values():
                          self.networks = list(names.values())[0]
-                         print(self.networks) if not self.networks.strip() == '' else None
+                         del self.networks.split()[-1]
+                         print(self.networks.split()) if not self.networks.strip() == '' else None
+
 
                def get_list_bluetooth_device(self):
                     """ Function output all bluetooth devise(s),
                   which available for your devise."""
 
-                    return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() == '' else None
+                    return [self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() == '' else None]
 
                def get_list_audio_devises(self):
                     """
@@ -111,7 +113,7 @@ if sys.platform == 'darwin':
                  (Available only on Mac-os)
                  """
 
-                    return self.devises if not self.devises.strip() == '' else None
+                    return [self.devises if not self.devises == '' else None]
 
 
           class Connector(object):
@@ -196,7 +198,7 @@ if sys.platform == 'darwin':
                  """
 
                     if not isinstance(brightness_percent, int):
-                         raise ValueBrightnessError('Type value of brightness must be ', int)
+                         raise ValueBrightnessError('Type value of brightness must be ', {int})
 
                     else:
                          if brightness_percent == 100:
@@ -227,8 +229,11 @@ if sys.platform == 'darwin':
 
                     subprocess.getoutput(cmd='brightness -v 0')
                def increase_brightness(self):
+                    """Set brightness increase by 1 division"""
                     subprocess.getoutput(cmd="""osascript -e 'tell application "System Events"' -e 'key code 144' -e ' end tell'""")
                def lower_brightness(self):
+                    """Set brightness lower by 1 division"""
+
                     subprocess.getoutput(cmd="""osascript -e 'tell application "System Events"' -e 'key code 145' -e ' end tell'""")
 
 
@@ -243,13 +248,10 @@ if sys.platform == 'darwin':
                def __init__(self):
                     self.percent = subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";", r"")
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
-                    airport = pathlib.Path(
-                         "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
+                    airport = pathlib.Path("/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
                     self.network = subprocess.getoutput(
                          cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
-                    self.size = \
-                    subprocess.getoutput('system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(
-                         ' ')
+                    self.size = subprocess.getoutput('system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
@@ -820,7 +822,7 @@ if sys.platform == 'darwin':
                     """
 
                     subprocess.getoutput(cmd=self.cmd % (record_time, camera_index, filename, extension))
-                    
+
                     return 'Check file is %s.%s' % (filename, extension)
 
                @property
@@ -831,6 +833,28 @@ if sys.platform == 'darwin':
                     """
 
                     return self.devises.strip().split(': ')[0]
+           
+
+          class WifiData(object):
+               def __init__(self):
+                    self.scaner = subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep maxRate')
+
+               def get_wifi_speed(self):
+                    """
+                    return speed wi-fi.
+                    :return:
+                    """
+                    return [self.scaner.strip()]
+
+               @property
+               def get_bssid(self):
+                    """Return bssid current network which you connected to"""
+                    return [subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep BSSID').strip()]
+
+               def get_lastTxRate(self):
+                    """Return last-Txrate of current network"""
+                    return [subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep lastTxRate').strip()]
+
 
 
 
@@ -840,4 +864,3 @@ elif sys.platform == 'win32':
 if __name__ == '__main__':
      exit(0)
 
-# end.
