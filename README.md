@@ -1,7 +1,7 @@
 
 
 # pyTerminalproccesosx
-Hello everyone!This module will help you change brightness, output , connecting to wifi-network, bluetooth device.You can use this utility for your python project.
+This lib will help you change brightness, output , connecting to wifi-network, bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need. For start work with this library need install by using 
 # Installation
 <p> git clone https://github.com/Alexandro1112/pyTerminalproccesosx<p>
