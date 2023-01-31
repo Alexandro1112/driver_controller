@@ -304,6 +304,9 @@ if sys.platform == 'darwin':
                @property
                def memory_size(self):
                     return 'Memory-size:', int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
+               @property
+               def get_mac_addres(self):
+                   return subprocess.getoutput(cmd='ifconfig | grep ether')
 
 
           class VoiceOver(object):
