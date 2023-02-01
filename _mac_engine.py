@@ -305,8 +305,8 @@ if sys.platform == 'darwin':
                def memory_size(self):
                     return 'Memory-size:', int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
                @property
-               def get_mac_addres(self):
-                   return subprocess.getoutput(cmd='ifconfig | grep ether')
+               def get_mac_address(self):
+                   return subprocess.getoutput(cmd='ifconfig en1 | awk \'/ether/{print $2}\'')
 
 
           class VoiceOver(object):
@@ -476,8 +476,7 @@ if sys.platform == 'darwin':
                     """
                     subprocess.getoutput(
                          cmd=self.command % (record_time, camera_index, microphone_index, filename, extension))
-                    if ord('q'):
-                         return
+                
 
                @property
                def list_devises(self):
@@ -862,6 +861,7 @@ if sys.platform == 'darwin':
 
 
 elif sys.platform == 'win32':
+           
      raise OSError('Windows version will be created soon...')
 
 if __name__ == '__main__':
