@@ -452,7 +452,7 @@ if sys.platform == 'darwin':
 
                     if extension in [i for i in self.AVAILABLE_EXTENSIONS]:
 
-                         sleep(pause if pause is not None else 0.0)
+                         sleep(pause if pause is not None else int.imag)
                          subprocess.getoutput(cmd=f'screencapture {filename}.{extension}')
                          return 'Successful...'
 
@@ -476,7 +476,7 @@ if sys.platform == 'darwin':
                     """
                     subprocess.getoutput(
                          cmd=self.command % (record_time, camera_index, microphone_index, filename, extension))
-                
+
 
                @property
                def list_devises(self):
@@ -484,10 +484,8 @@ if sys.platform == 'darwin':
                     Return all available devises for recording audio/video.
                     :return:
                     """
-                    devises = '[' + str(
-                         subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split(
-                              '[', maxsplit=1)[-1])
-                    return devises.strip()
+                    devises = '[' + str(subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[-1])
+                    return devises.split(': ')[0]
 
 
           class PhotoCapture(object):
@@ -528,8 +526,7 @@ if sys.platform == 'darwin':
                          else:
 
                               print('recording...')
-                              if subprocess.getstatusoutput(
-                                      cmd=f'/opt/local/bin/ffmpeg -f avfoundation -t {record_time} -i ":{microphone_index}"  {filename}.{extension}')[0] == 1:
+                              if subprocess.getstatusoutput(cmd=f'/opt/local/bin/ffmpeg -f avfoundation -t {record_time} -i ":{microphone_index}"  {filename}.{extension}')[0] == 1:
                                    raise IndexError
 
                               return 'Check file is %s.%s' % (filename, extension)
@@ -751,7 +748,7 @@ if sys.platform == 'darwin':
                     :return:
                     """
 
-                    return [self.size % path]
+                    return [ self.size % path ]
 
                @classmethod
                def extension(cls, path):
@@ -841,27 +838,27 @@ if sys.platform == 'darwin':
                def __init__(self):
                     self.scaner = subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep maxRate')
 
+               @property
                def get_wifi_speed(self):
                     """
                     return speed wi-fi.
                     :return:
                     """
-                    return [self.scaner.strip()]
+                    return [ self.scaner.strip() ]
 
                @property
                def get_bssid(self):
                     """Return bssid current network which you connected to"""
-                    return [subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep BSSID').strip()]
-
-               def get_lastTxRate(self):
+                    return [ subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep BSSID').strip() ]
+               @property
+               def get_last_speed(self):
                     """Return last-Txrate of current network"""
-                    return [subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep lastTxRate').strip()]
+                    return [ subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep lastTxRate').strip() ]
 
 
 
 
 elif sys.platform == 'win32':
-           
      raise OSError('Windows version will be created soon...')
 
 if __name__ == '__main__':
