@@ -67,7 +67,7 @@ import os
 
 __all__ = ['MacCmd', 'CONSTANT_SOUNDS']
 
-if sys.platform == 'darwi=n':
+if sys.platform == 'darwin':
      class MacCmd(object):
 
           class OutputListsDevises(object):
