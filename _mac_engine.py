@@ -258,16 +258,15 @@ if sys.platform == 'darwin':
                def __init__(self):
                     self.percent = subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";", r"")
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
-                    airport = pathlib.Path(
-                         "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
-                    self.network = subprocess.getoutput(
-                         cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
-                    self.size = \
-                    subprocess.getoutput('system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(
-                         ' ')
+                    airport = pathlib.Path( "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
+                    self.network = subprocess.getoutput(cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
+                    self.size = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
+                    self.num = 'system_profiler SPHardwareDataType | grep "Serial Number (system)"'
+                    self.disk_mem = 'diskutil list | grep GUID_partition_scheme'
+                    self.video_crd_nm = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')
 
 
                @property
@@ -317,6 +316,19 @@ if sys.platform == 'darwin':
                @property
                def memory_size(self):
                     return 'Memory-size:', int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
+               @property
+               def get_mac_serial_number(self):
+                   return subprocess.getoutput(cmd=self.num).strip().split(': ')[-1]
+
+               @property
+               def get_disk_memory(self):
+                    return subprocess.getoutput(cmd=self.disk_mem).replace('*', '').split()[-3] + 'Gb'
+
+               @property
+               def get_name_video_card_name(self):
+                    return self.video_crd_nm.strip().split(':')[-1]
+
+
 
 
 
@@ -389,7 +401,7 @@ if sys.platform == 'darwin':
                           f'buttons {repr(button1), repr(button2)} with icon stop\''
                         return subprocess.getoutput(cmd=cmd).split(':')[-1]
                     else:
-                         raise TypeError
+                        raise TypeError
 
 
                def send_lateral_message(self, label, subtitle, text, file_icon: [None, str], sound: [None, CONSTANT_SOUNDS]):
@@ -759,7 +771,7 @@ if sys.platform == 'darwin':
                     :return:
                     """
 
-                    return [self.size % path]
+                    return [ self.size % path ]
 
                @classmethod
                def extension(cls, path):
@@ -768,6 +780,20 @@ if sys.platform == 'darwin':
                @classmethod
                def name(cls, path):
                     return path.split('/', maxsplit=3)[-1].split('.')[0]
+
+               def get_files_in_folder(self, path: str):
+                    """Return all files in folder"""
+                    if subprocess.getstatusoutput(cmd=f'ls {path}')[0] == 1:
+                        raise FileExistsError
+                    return subprocess.getoutput(cmd=f'ls {path}')
+               def get_folder_size(self, path):
+                    """Return all files in folder"""
+                    if subprocess.getstatusoutput(cmd=self.size % path)[0] == 1:
+                         raise FileExistsError
+                    return subprocess.getoutput(cmd=self.size % path)
+
+
+
 
 
           class Volume(object):
@@ -833,7 +859,7 @@ if sys.platform == 'darwin':
 
                     subprocess.getoutput(cmd=self.cmd % (record_time, camera_index, filename, extension))
                     if os.path.isfile(f'{filename}.{extension}'):
-                         raise FileExistsError(f'Please, rename file {filename}.{extension} him, because it already exist.')
+                         raise FileExistsError(f'Please, rename file {filename}.{extension}, because it already exist.')
                     else:
                         return 'Check file is %s.%s' % (filename, extension)
 
@@ -848,7 +874,7 @@ if sys.platform == 'darwin':
 
 
 elif sys.platform == 'win32':
-     raise OSError('Windows version will be created soon...')
+     raise OSError('Windows version will be created soon')
 
 if __name__ == '__main__':
      exit(0)
