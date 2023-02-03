@@ -82,18 +82,17 @@ if sys.platform == 'darwin':
                def get_list_wifi_networks(self):
                     """ Function output all wi-fi networks,
                        which available for your devise."""
-                    
 
+                    wifi = []
                     bundle_path = '/System/Library/Frameworks/CoreWLAN.framework'
-                    objc.loadBundle('CoreWLAN',
-                                    bundle_path=bundle_path,
-                                    module_globals=globals())
+                    objc.loadBundle('CoreWLAN', bundle_path=bundle_path, module_globals=globals())
 
                     iface = CWInterface.interface()
                     r = iface.scanForNetworksWithName_includeHidden_error_(None, True, None)
                     for i in range(1, len(str(r).split('>')), 2):
-                         return (str(r).split('>')[i].split(',')[0] + ']')
-
+                         wifi.append(str(r).split('>')[i].split(',')[0] + ']')
+                    for items in wifi:
+                        yield items.strip().replace('ssid', '').replace('[', '').replace(']',  '').replace('=', '')
                def get_list_bluetooth_device(self):
                     """ Function output all bluetooth devise(s),
                   which available for your devise."""
