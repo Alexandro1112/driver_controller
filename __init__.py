@@ -19,7 +19,7 @@ elif platform == 'darwin':
 
 else:
 
-    raise OSError('While, platform support only on mac/Linux os')
+    from ._windows_engine import *
 
 
 
