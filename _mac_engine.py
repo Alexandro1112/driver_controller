@@ -47,7 +47,7 @@ from warnings import filterwarnings
 from shutup import please
 
 # pause for methods
-from time import sleep, ctime
+from time import (sleep, ctime)
 # for get list applications
 from psutil import process_iter
 # Constants
@@ -268,7 +268,6 @@ if sys.platform == 'darwin':
                     self.disk_mem = 'diskutil list | grep GUID_partition_scheme'
                     self.video_crd_nm = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')
 
-
                @property
                def devise_battery(self):
                     """
@@ -284,7 +283,7 @@ if sys.platform == 'darwin':
                  Function.
                  :return: Version your devise.
                  """
-                    return f'Version your Mac os devise: {self.vers}'
+                    return f'{self.vers}'
 
                @property
                def current_connected_wifi_network(self):
@@ -315,7 +314,7 @@ if sys.platform == 'darwin':
 
                @property
                def memory_size(self):
-                    return 'Memory-size:', int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
+                    return  int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
                @property
                def get_mac_serial_number(self):
                    return subprocess.getoutput(cmd=self.num).strip().split(': ')[-1]
@@ -325,7 +324,7 @@ if sys.platform == 'darwin':
                     return subprocess.getoutput(cmd=self.disk_mem).replace('*', '').split()[-3] + 'Gb'
 
                @property
-               def get_name_video_card_name(self):
+               def get_video_card_name(self):
                     return self.video_crd_nm.strip().split(':')[-1]
 
 
@@ -628,8 +627,8 @@ if sys.platform == 'darwin':
                     :return: 
                     """  # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
                     cmd = f'open /Applications/Safari.app {url}'  # Select your main browser
-                    subprocess.getoutput(cmd=cmd)
-                    log('Successful...', log=4)
+                    return subprocess.getoutput(cmd=cmd)
+                    # log(log='Successful...', level=4)
 
 
           class Sound(object):
@@ -788,9 +787,9 @@ if sys.platform == 'darwin':
                     return subprocess.getoutput(cmd=f'ls {path}')
                def get_folder_size(self, path):
                     """Return all files in folder"""
-                    if subprocess.getstatusoutput(cmd=self.size % path)[0] == 1:
+                    if subprocess.getstatusoutput(cmd=f'du -sh {path}')[0] == 1:
                          raise FileExistsError
-                    return subprocess.getoutput(cmd=self.size % path)
+                    return subprocess.getoutput(cmd=f'du -sh {path}').split()[0]
 
 
 
@@ -838,6 +837,16 @@ if sys.platform == 'darwin':
                     """
                     return self.input_volume
 
+          class WifiSpeed(object):
+               def __init__(self):
+                    self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
+                    self.last_speed = subprocess.getoutput(cmd='airport -I | grep lastTxRate')
+
+               def get_speed_by_current_network(self):
+                    return self.speed
+
+               def get_last_speed_by_current_network(self):
+                    return self.last_speed
 
           class WebCameraCapture(object):
                """Collect data in camera"""
