@@ -2,8 +2,7 @@
 
 # pyTerminalproccesosx
 This lib will help you change brightness, output , connecting to wifi-network, bluetooth device.You can use this utility for your python project.
-In the github repository local submodules, install them - not need. For start work with this library need install by using 
-# <i>for windows using other libraries.For example screen-brightness-control pybluez opencv pyaudio and etc.<i>
+In the github repository local submodules, install them - not need
 # Installation
 <p> git clone https://github.com/Alexandro1112/pyTerminalproccesosx<p>
      <h3>After, import them. Explore main abillity this library. <h3>
