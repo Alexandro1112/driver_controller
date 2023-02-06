@@ -243,6 +243,7 @@ if sys.platform == 'darwin':
 
 
                def sleep_mac(self, pause: [int, float]):
+                    """Sleep Mac"""
                     sleep(pause)
                     subprocess.getoutput(cmd="osascript - e'tell application \"finder\" to sleep'")
 
@@ -315,6 +316,7 @@ if sys.platform == 'darwin':
                @property
                def memory_size(self):
                     return  int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
+               
                @property
                def get_mac_serial_number(self):
                    return subprocess.getoutput(cmd=self.num).strip().split(': ')[-1]
@@ -423,6 +425,25 @@ if sys.platform == 'darwin':
 
                     subprocess.getoutput(cmd=commands)
                     subprocess.getstatusoutput(cmd=commands2)
+               def send_entry_alert(self, title, button1, button2, entr_text=''):
+                    """
+                    :param title: Title of entry
+                    :param button1: button in alert
+                    :param entr_text: placeholder-text
+                    :param button2: button-2
+                    :return:
+                    """
+                    cmd = """
+                    a=$(osascript -e 'try
+                    tell app "SystemUIServer"
+                    set answer to text returned of (display dialog "" default answer "%s" with title "%s" buttons {"%s", "%s"})
+                    end
+                    end
+                    activate app (path to frontmost application as text)
+                    answer' | tr '\r' ' ')
+                    [[ -z "$a" ]] && exit
+                    """ % (entr_text, title, button1, button2)
+                    subprocess.getoutput(cmd=cmd)
 
 
           class Creator(object):
@@ -764,6 +785,7 @@ if sys.platform == 'darwin':
                     return ctime(os.stat(path).st_birthtime)
 
                def get_file_size(self, path):
+
                     """
                     Return size of file.
                     :param path: Path to file
@@ -829,6 +851,7 @@ if sys.platform == 'darwin':
 
                     return self.output_volume
 
+               
                @property
                def get_input_volume_percent(self):
                     """
@@ -887,4 +910,5 @@ elif sys.platform == 'win32':
 
 if __name__ == '__main__':
      exit(0)
+     
 
