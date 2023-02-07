@@ -36,7 +36,7 @@
 # TODO: Make more classes
 #                                            Finally, run code.
 
-# for full paths
+# for recognize full paths
 import pathlib
 # all process
 import subprocess
@@ -84,15 +84,19 @@ if sys.platform == 'darwin':
                        which available for your devise."""
 
                     wifi = []
+                    wifi2 = []
                     bundle_path = '/System/Library/Frameworks/CoreWLAN.framework'
                     objc.loadBundle('CoreWLAN', bundle_path=bundle_path, module_globals=globals())
 
-                    iface = CWInterface.interface()
-                    r = iface.scanForNetworksWithName_includeHidden_error_(None, True, None)
+                    response = CWInterface.interface()
+                    r = response.scanForNetworksWithName_includeHidden_error_(None, True, None)
                     for i in range(1, len(str(r).split('>')), 2):
                          wifi.append(str(r).split('>')[i].split(',')[0] + ']')
+
                     for items in wifi:
-                        yield items.strip().replace('ssid', '').replace('[', '').replace(']',  '').replace('=', '')
+                        wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']',  '').replace('=', '').strip())
+
+                    yield set(wifi2)
                def get_list_bluetooth_device(self):
                     """ Function output all bluetooth devise(s),
                   which available for your devise."""
@@ -250,7 +254,7 @@ if sys.platform == 'darwin':
 
                @property
                def get_brightness(self):
-                    return round(float(self.get_cur_brightness_per.split(' ')[-1]), ndigits=2)
+                    return round(float(self.get_cur_brightness_per.split(' ')[-1]), ndigits=1)
 
 
           class SystemConfig(object):
@@ -266,8 +270,8 @@ if sys.platform == 'darwin':
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
                     self.num = 'system_profiler SPHardwareDataType | grep "Serial Number (system)"'
-                    self.disk_mem = 'diskutil list | grep GUID_partition_scheme'
-                    self.video_crd_nm = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')
+                    self.disk_mem = 'diskutil list | grep GUID_partition_scheme' # Diskutil not found: https://superuser.com/questions/213088/diskutil-command-not-found-in-os-x-terminal
+                    self.video_crd_nm = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')# system profiler: command not found https://github.com/jlhonora/lsusb/issues/12?ysclid=ldu37f5jk9865312203
 
                @property
                def devise_battery(self):
@@ -323,7 +327,7 @@ if sys.platform == 'darwin':
 
                @property
                def get_disk_memory(self):
-                    return subprocess.getoutput(cmd=self.disk_mem).replace('*', '').split()[-3] + 'Gb'
+                    return subprocess.getoutput(cmd=self.disk_mem).replace('*', '').split()[2] + 'Gb'
 
                @property
                def get_video_card_name(self):
@@ -598,7 +602,7 @@ if sys.platform == 'darwin':
                  :return: [True] if application
                  exist on your devise, [False] - if no.
                  """
-                    return bool(application_name in (i.name() for i in self.apps))
+                    return application_name in (i.name() for i in self.apps)
 
                def close_app(self, application_name):
                     """
@@ -823,6 +827,7 @@ if sys.platform == 'darwin':
                     self.volume = 'osascript -e "set Volume %s"'
                     self.max_volume = 'osascript -e "set Volume 10"'
                     self.min_volume = 'osascript -e "set Volume 0"'
+                    self.muted = subprocess.getoutput(cmd='osascript -e \'get volume settings\'')
                     self.input_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[3].replace(',', '')
                     self.output_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[1].replace(',', '')
 
@@ -860,6 +865,8 @@ if sys.platform == 'darwin':
                     """
                     return self.input_volume
 
+               def ismuted(self):
+                    return self.muted.split(', ')[-1].split(':')[-1].capitalize()
           class WifiSpeed(object):
                def __init__(self):
                     self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
@@ -902,7 +909,7 @@ if sys.platform == 'darwin':
                     :return: Devises
                     """
 
-                    return '[' + self.devises.strip().split('[', maxsplit=1)[-1]
+                    return ('[' + self.devises.strip().split('[', maxsplit=1)[-1])
 
 
 elif sys.platform == 'win32':
