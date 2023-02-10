@@ -48,6 +48,7 @@ from shutup import please
 
 # Mouse-click
 import Quartz
+import Quartz.CoreGraphics
 
 # pause for methods
 from time import (sleep, ctime)
@@ -63,6 +64,7 @@ from sounddevice import query_devices
 # Exceptions for methods
 from .exceptions import *
 
+import AppKit
 
 # For collecting data in system files
 import objc
@@ -945,6 +947,11 @@ if sys.platform == 'darwin':
                     return '[' + str(self.devises.strip().split('[', maxsplit=1)[-1].split(': ')[0])
 
           class Mouse(object):
+               def __init__(self):
+                    location = AppKit.NSEvent.mouseLocation()
+                    position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - location.y))
+                    self.x_position = position[0]
+                    self.y_position = position[1]
                """Mouse events"""
                
                @classmethod
@@ -953,14 +960,32 @@ if sys.platform == 'darwin':
                     mouseEvent = Quartz.CGEventCreateMouseEvent(None, ev, (x, y), button)
                     Quartz.CGEventPost(Quartz.kCGHIDEventTap, mouseEvent)
                     
+
+               def ClickEventInitScript(self, x, y, type):
+                    """Click initalizate function"""
+                    theEvent = Quartz.CoreGraphics.CGEventCreateMouseEvent(
+                         None,
+                         type,
+                         (x, y),
+                         Quartz.CoreGraphics.kCGMouseButtonLeft)
+                    Quartz.CoreGraphics.CGEventPost(Quartz.CoreGraphics.kCGHIDEventTap, theEvent)
                     
                @classmethod
                def mouse_move(cls, x, y):
                     """Move mouse in pointed out possition"""
                     cls._sendMouseEvent(Quartz.kCGEventMouseMoved, x, y, 0)
 
+               @classmethod
+               def mouse_click(cls, x, y):
+                    cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseDown, x, y, button=2)
+                    cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseUp, x, y, button=2)
+
+               @property
+               def mouse_position(self):
+                    return self.x_position, self.y_position
+
 
 if __name__ == '__main__':
-    exit(0)
+    exit(1)
      
 
