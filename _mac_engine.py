@@ -36,7 +36,7 @@
 # TODO: Make more classes
 #                                            Finally, run code.
 
-# for recognize full paths
+# for full paths
 import pathlib
 # all process
 import subprocess
@@ -45,6 +45,9 @@ import sys
 # Unplug warnings, unexpected errors
 from warnings import filterwarnings
 from shutup import please
+
+# Mouse-click
+import Quartz
 
 # pause for methods
 from time import (sleep, ctime)
@@ -61,9 +64,12 @@ from sounddevice import query_devices
 from .exceptions import *
 
 
+# For collecting data in system files
 import objc
 
+# Os
 import os
+
 
 __all__ = ['MacCmd', 'CONSTANT_SOUNDS']
 
@@ -74,8 +80,6 @@ if sys.platform == 'darwin':
                """ Return output devises """
 
                def __init__(self):
-                    self.scan_cmd = subprocess.Popen(['airport', '-s'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                     stdin=subprocess.PIPE)
                     self.bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
                     self.devises = query_devices()
 
@@ -97,6 +101,7 @@ if sys.platform == 'darwin':
                         wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']',  '').replace('=', '').strip())
 
                     yield set(wifi2)
+
                def get_list_bluetooth_device(self):
                     """ Function output all bluetooth devise(s),
                   which available for your devise."""
@@ -111,7 +116,7 @@ if sys.platform == 'darwin':
                  (Available only on Mac-os)
                  """
 
-                    return self.devises if not self.devises.strip() == '' else None
+                    return self.devises
 
 
           class Connector(object):
@@ -167,7 +172,12 @@ if sys.platform == 'darwin':
                  """
 
                     sleep(1)
-                    subprocess.getoutput(cmd='blueutil -p off')
+                    subprocess.getoutput(cmd='osascript -e \'tell application '
+                                             '"System Events" to tell process'
+                                             ' "SystemUIServer" to tell (menu '
+                                             'bar item 1 of menu bar 1 whose '
+                                             'description is "bluetooth") to '
+                                             '{click, click (menu item 2 of menu 1)}\'')
                     return 'Successful...'
 
                def enable_bluetooth(self):
@@ -254,6 +264,7 @@ if sys.platform == 'darwin':
 
                @property
                def get_brightness(self):
+                    """Get brightness percent"""
                     return round(float(self.get_cur_brightness_per.split(' ')[-1]), ndigits=1)
 
 
@@ -288,7 +299,7 @@ if sys.platform == 'darwin':
                  Function.
                  :return: Version your devise.
                  """
-                    return f'{self.vers}'
+                    return self.vers
 
                @property
                def current_connected_wifi_network(self):
@@ -301,13 +312,20 @@ if sys.platform == 'darwin':
 
                     return self.network.capitalize()
 
+
+
                @property
                def screen_size(self):
                     """
-                 Screen size of your mac-book.
-                 :return: screen size
-                 """
+                   Screen size of your mac-book.
+                   :return: screen size
+
+                   """
+
+
                     return self.size
+
+
 
                @property
                def get_processor_name(self):
@@ -447,7 +465,7 @@ if sys.platform == 'darwin':
                     answer' | tr '\r' ' ')
                     [[ -z "$a" ]] && exit
                     """ % (entr_text, title, button1, button2)
-                    subprocess.getoutput(cmd=cmd)
+                    return subprocess.getoutput(cmd=cmd)
 
 
           class Creator(object):
@@ -728,6 +746,17 @@ if sys.platform == 'darwin':
                                              '/System/Library/Sounds/Submarine.aiff -v 10; done' % iters)
 
                @staticmethod
+               def morse_sound(iters: int):
+                    """
+                 Submarine voice-notify.
+                 :param iters How many
+                 iterations(repeats) of sound.
+                 (Available only on Mac-os)
+                 """
+                    subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
+                                             '/System/Library/Sounds/Morse.aiff -v 10; done' % iters)
+
+               @staticmethod
                def ping_sound(iters: int):
                     """
                  Ping voice-notify.
@@ -776,8 +805,7 @@ if sys.platform == 'darwin':
 
 
           class FileConfig(object):
-               def __init__(self):
-                    self.size = subprocess.getoutput(f'du -sh %')
+
 
 
                def get_date_create_file(self, path):
@@ -796,26 +824,31 @@ if sys.platform == 'darwin':
                     :return:
                     """
 
-                    return [ self.size % path ]
+                    return subprocess.getoutput(f'du -sh {path}').split('\t')[0].strip()
 
-               @classmethod
-               def extension(cls, path):
+
+               def extension(self, path):
                     return str(path).split('.')[-1]
 
-               @classmethod
-               def name(cls, path):
-                    return path.split('/', maxsplit=3)[-1].split('.')[0]
+
+
+
+               def name(self, path):
+                   return path.split('/', maxsplit=3)[-1].split('.')[0]
+
 
                def get_files_in_folder(self, path: str):
                     """Return all files in folder"""
-                    if subprocess.getstatusoutput(cmd=f'ls {path}')[0] == 1:
+                    if not os.path.exists(path=path):
                         raise FileExistsError
                     return subprocess.getoutput(cmd=f'ls {path}')
                def get_folder_size(self, path):
                     """Return all files in folder"""
-                    if subprocess.getstatusoutput(cmd=f'du -sh {path}')[0] == 1:
+                    if   os.path.exists(path=path):
+
+                        return subprocess.getoutput(cmd=f'du -sh {path}').split()
+                    else:
                          raise FileExistsError
-                    return subprocess.getoutput(cmd=f'du -sh {path}').split()[0]
 
 
 
@@ -909,13 +942,25 @@ if sys.platform == 'darwin':
                     :return: Devises
                     """
 
-                    return ('[' + self.devises.strip().split('[', maxsplit=1)[-1])
+                    return '[' + str(self.devises.strip().split('[', maxsplit=1)[-1].split(': ')[0])
 
+          class Mouse(object):
+               """Mouse events"""
+               
+               @classmethod
+               def EventInitScript(cls, ev, x, y, button):
+                    """Initalizate mouse objc x: x-pos, y:y-pos"""
+                    mouseEvent = Quartz.CGEventCreateMouseEvent(None, ev, (x, y), button)
+                    Quartz.CGEventPost(Quartz.kCGHIDEventTap, mouseEvent)
+                    
+                    
+               @classmethod
+               def mouse_move(cls, x, y):
+                    """Move mouse in pointed out possition"""
+                    cls._sendMouseEvent(Quartz.kCGEventMouseMoved, x, y, 0)
 
-elif sys.platform == 'win32':
-     raise OSError('Windows version will be created soon')
 
 if __name__ == '__main__':
-     exit(0)
+    exit(0)
      
 
