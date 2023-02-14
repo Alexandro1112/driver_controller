@@ -72,7 +72,6 @@ import objc
 # Os
 import os
 
-
 __all__ = ['MacCmd', 'CONSTANT_SOUNDS']
 
 if sys.platform == 'darwin':
@@ -100,7 +99,8 @@ if sys.platform == 'darwin':
                          wifi.append(str(r).split('>')[i].split(',')[0] + ']')
 
                     for items in wifi:
-                        wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']',  '').replace('=', '').strip())
+                         wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']', '').replace('=',
+                                                                                                                  '').strip())
 
                     yield set(wifi2)
 
@@ -108,7 +108,8 @@ if sys.platform == 'darwin':
                     """ Function output all bluetooth devise(s),
                   which available for your devise."""
 
-                    return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() == '' else None
+                    return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[
+                                                                             0].strip() == '' else None
 
                def get_list_audio_devises(self):
                     """
@@ -120,12 +121,11 @@ if sys.platform == 'darwin':
 
                     return self.devises
 
-
           class Connector(object):
                """Connect to wi-fi networks"""
 
                @staticmethod
-               def connect_wifi_network(wifi_network, password):
+               def connectTo(wifi_network, password):
                     """
                  Auto connect to wi-fi network.
 
@@ -143,7 +143,11 @@ if sys.platform == 'darwin':
 
                     else:
                          log(f'You successful connected to wifi network {wifi_network}', level=4)
+               def disconnect(self):
+                    subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi off')
 
+               def connect(self):
+                    subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi on')
 
           class Switching(object):
                """Switch wi-fi/bluetooth"""
@@ -188,15 +192,17 @@ if sys.platform == 'darwin':
                  :return: Successfully
                  """
                     sleep(1)
-                    subprocess.getoutput(cmd='blueutil -p on')
+                    subprocess.getoutput(cmd='osascript -e \'tell application "System Events" '
+                                             'to tell process "SystemUIServer" to tell '
+                                             '(menu bar item 1 of menu bar 1 whose description '
+                                             'is "bluetooth") to {click, click (menu item 2 of menu 1)}\'')
                     return 'Successful...'
-
 
           class Brightness(object):
                """Set brightness"""
+
                def __init__(self):
                     self.get_cur_brightness_per = subprocess.getoutput(cmd='brightness -l')
-
 
                def set_brightness(self, brightness_percent: int):
                     """
@@ -238,37 +244,35 @@ if sys.platform == 'darwin':
                  """
 
                     subprocess.getoutput(cmd='brightness -v 0')
+
                def increase_brightness(self, division):
                     """Increase brightness by 1 division"""
                     if division >= 1:
-                         for repeat in range(division+2):
-                              subprocess.getoutput(cmd="""osascript -e 'tell application "System Events"' -e 'key code 144' -e ' end tell'""")
+                         for repeat in range(division + 2):
+                              subprocess.getoutput(
+                                   cmd="""osascript -e 'tell application "System Events"' -e 'key code 144' -e ' end tell'""")
                     else:
                          division = division.imag
                     division += 1
 
                def decrease_brightness(self, division: int):
                     if division >= 1:
-                         for repeat in range(division+2):
-                            subprocess.getoutput(cmd="""osascript -e 'tell application "System Events"' -e 'key code 145' -e ' end tell'""")
+                         for repeat in range(division + 2):
+                              subprocess.getoutput(
+                                   cmd="""osascript -e 'tell application "System Events"' -e 'key code 145' -e ' end tell'""")
                     else:
                          division = division.imag
                     division += 1
-
-
-
 
                def sleep_mac(self, pause: [int, float]):
                     """Sleep Mac"""
                     sleep(pause)
                     subprocess.getoutput(cmd="osascript - e'tell application \"finder\" to sleep'")
 
-
                @property
                def get_brightness(self):
                     """Get brightness percent"""
                     return round(float(self.get_cur_brightness_per.split(' ')[-1]), ndigits=1)
-
 
           class SystemConfig(object):
                """Data about mac"""
@@ -276,15 +280,20 @@ if sys.platform == 'darwin':
                def __init__(self):
                     self.percent = subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";", r"")
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
-                    airport = pathlib.Path( "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
-                    self.network = subprocess.getoutput(cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
-                    self.size = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
+                    airport = pathlib.Path(
+                         "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
+                    self.network = subprocess.getoutput(
+                         cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
+                    self.size = \
+                    subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[
+                         1].split(' ')
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
                     self.num = 'system_profiler SPHardwareDataType | grep "Serial Number (system)"'
-                    self.disk_mem = 'diskutil list | grep GUID_partition_scheme' # Diskutil not found: https://superuser.com/questions/213088/diskutil-command-not-found-in-os-x-terminal
-                    self.video_crd_nm = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')# system profiler: command not found https://github.com/jlhonora/lsusb/issues/12?ysclid=ldu37f5jk9865312203
+                    self.disk_mem = 'diskutil list | grep GUID_partition_scheme'  # Diskutil not found: https://superuser.com/questions/213088/diskutil-command-not-found-in-os-x-terminal
+                    self.video_crd_nm = subprocess.getoutput(
+                         cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')  # system profiler: command not found https://github.com/jlhonora/lsusb/issues/12?ysclid=ldu37f5jk9865312203
 
                @property
                def devise_battery(self):
@@ -314,8 +323,6 @@ if sys.platform == 'darwin':
 
                     return self.network.capitalize()
 
-
-
                @property
                def screen_size(self):
                     """
@@ -324,10 +331,7 @@ if sys.platform == 'darwin':
 
                    """
 
-
                     return self.size
-
-
 
                @property
                def get_processor_name(self):
@@ -339,23 +343,20 @@ if sys.platform == 'darwin':
 
                @property
                def memory_size(self):
-                    return  int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
-               
+                    return int(self.mem_size.split(': ')[-1]) / pow(1024, 3)
+
                @property
                def get_mac_serial_number(self):
-                   return subprocess.getoutput(cmd=self.num).strip().split(': ')[-1]
+                    return subprocess.getoutput(cmd=self.num).strip().split(': ')[-1]
 
                @property
                def get_disk_memory(self):
                     return subprocess.getoutput(cmd=self.disk_mem).replace('*', '').split()[2] + 'Gb'
 
+
                @property
                def get_video_card_name(self):
                     return self.video_crd_nm.strip().split(':')[-1]
-
-
-
-
 
           class VoiceOver(object):
                """Voiceover text"""
@@ -378,8 +379,7 @@ if sys.platform == 'darwin':
                          if subprocess.getstatusoutput(cmd=f'say -v {voice} -i {text}')[0] == 1:
                               raise NameError(f'Voice {repr(voice)} is unsupported on your devise.')
                          else:
-                             subprocess.getoutput(cmd=f'say -v {voice} -i {text}')
-
+                              subprocess.getoutput(cmd=f'say -v {voice} -i {text}')
 
           class PasswordManager(object):
                """Paasword-manager"""
@@ -398,15 +398,17 @@ if sys.platform == 'darwin':
 
                     password = subprocess.getoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')
                     if not name_wifi_network in subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.'
-                                                                     'framework/Versions/A/Resources/airport scan') or subprocess.getstatusoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')[0]==0:
+                                                                         'framework/Versions/A/Resources/airport scan') or \
+                            subprocess.getstatusoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')[
+                                 0] == 0:
                          return password.strip()
                     else:
-                        raise WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)}')
+                         raise WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)}')
 
           class Notifier(object):
                """Send different alerts"""
 
-               def send_text_alert(self, text):
+               def send_text_alert(self, text, title=''):
                     """
                  Make alert with point out text,
                  which displayed at the center of
@@ -415,24 +417,25 @@ if sys.platform == 'darwin':
                  (Available only on Mac-os)
                  """
 
-                    cmd = f'osascript -e \'tell app "System Events" to display dialog "{text}"\''
+                    cmd = f'osascript -e \'tell app "System Events" to display dialog "{text}" with title "%s"\'' % title
                     subprocess.getoutput(cmd=cmd)
 
                def send_warning_alert(self, labeltext, button1: [int, float, str], button2: [int, float, str]):
                     if (type(button1) == int or float or str) and (type(button2) == int or float or str):
 
-                        cmd = 'osascript -e \'tell application (path to frontmost ' \
-                          f'application as text) to display dialog "{labeltext}" ' \
-                          f'buttons {repr(button1), repr(button2)} with icon stop\''
-                        return subprocess.getoutput(cmd=cmd).split(':')[-1]
+                         cmd = 'osascript -e \'tell application (path to frontmost ' \
+                               f'application as text) to display dialog "{labeltext}" ' \
+                               f'buttons {repr(button1), repr(button2)} with icon stop\''
+                         return subprocess.getoutput(cmd=cmd).split(':')[-1]
                     else:
-                        raise TypeError
+                         raise TypeError
 
-
-               def send_lateral_message(self, label, subtitle, text, file_icon: [None, str], sound: [None, CONSTANT_SOUNDS]):
+               def send_lateral_message(self, label, subtitle, text, file_icon: [None, str],
+                                        sound: [None, CONSTANT_SOUNDS], content_img=None):
                     """
                   Make Lateral message with:
                   :param label: Main title on message
+                  :param content_img: Image which local in center
                   :param subtitle: Subtitle of message
                   :param text: Description of message
                   :param file_icon: Icon in message (Path to image)
@@ -440,15 +443,22 @@ if sys.platform == 'darwin':
                   if you don't want used icon
                   :return: Successful.
                   """
-                    if len(file_icon.split()) > 1:
-                        fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
-                    else:
+                    if len(file_icon.split()) > 1 or len(content_img.split()) > 1:
                          fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + repr(str(file_icon))
-                    commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s" % (label, subtitle, text, fullpath)
-                    commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
+                         content = str(pathlib.Path(str(content_img)).cwd()) + '/' + repr(str(content_img))
+                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage {content}" % (
+                              label, subtitle, text, fullpath)
+                         commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
+                    else:
+                         fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
+                         content2 = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
+                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage {content2}"% (
+                         label, subtitle, text, fullpath)
+                         commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
 
                     subprocess.getoutput(cmd=commands)
                     subprocess.getstatusoutput(cmd=commands2)
+
                def send_entry_alert(self, title, button1, button2, entr_text=''):
                     """
                     :param title: Title of entry
@@ -469,7 +479,6 @@ if sys.platform == 'darwin':
                     """ % (entr_text, title, button1, button2)
                     return subprocess.getoutput(cmd=cmd)
 
-
           class Creator(object):
                """Create anything"""
 
@@ -481,7 +490,7 @@ if sys.platform == 'darwin':
                     :return: Successful.
                     """
                     if name == '':
-                        subprocess.getoutput(cmd=str('touch ') + str(name) + str('.') + str(extension))
+                         subprocess.getoutput(cmd=str('touch ') + str(name) + str('.') + str(extension))
 
                def create_folder(self, name):
                     """
@@ -493,7 +502,6 @@ if sys.platform == 'darwin':
                          raise NameError('Assign this folder a name!') from None
                     else:
                          subprocess.getoutput(cmd=f'mkdir {name}')
-
 
           class ScreenCapture(object):
                """Make screenshot/video with settings"""
@@ -532,7 +540,6 @@ if sys.platform == 'darwin':
                          raise UnsupportedFormat(
                               "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
 
-
                def video_capture(self, record_time, camera_index, microphone_index, filename, extension):
                     """
                     Capture screen-video, click [q] for end video, and save them.
@@ -552,7 +559,9 @@ if sys.platform == 'darwin':
                     Return all available devises for recording audio/video.
                     :return:
                     """
-                    devises = '[' + str(subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[-1])
+                    devises = '[' + str(subprocess.getoutput(
+                         cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[
+                                             -1])
                     return devises.strip().split(': ')[0]
 
                @property
@@ -569,9 +578,9 @@ if sys.platform == 'darwin':
                  :param filename: name of created file
                  :return: Successful...
                  """
-                    subprocess.getoutput(cmd=f'/opt/local/bin/ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
+                    subprocess.getoutput(
+                         cmd=f'/opt/local/bin/ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
                     return 'Check file is %s.%s' % (filename, extension)
-
 
           class AudioRecorder(object):
                """Audio recorder"""
@@ -598,7 +607,8 @@ if sys.platform == 'darwin':
 
                               print('recording...')
                               if subprocess.getstatusoutput(
-                                      cmd=f'/opt/local/bin/ffmpeg -f avfoundation -t {record_time} -i ":{microphone_index}"  {filename}.{extension}')[0] == 1:
+                                      cmd=f'/opt/local/bin/ffmpeg -f avfoundation -t {record_time} -i ":{microphone_index}"  {filename}.{extension}')[
+                                   0] == 1:
                                    raise IndexError
 
                               return 'Check file is %s.%s' % (filename, extension)
@@ -607,9 +617,6 @@ if sys.platform == 'darwin':
 
                     else:
                          raise UnsupportedFormat('Method can make files only with extensions (\'wav', 'mp3\')')
-
-
-
 
           class AppSystem(object):
                def __init__(self):
@@ -635,14 +642,14 @@ if sys.platform == 'darwin':
                     subprocess.getoutput(cmd=f'pkill {application_name}')
                     return 'Successful...'
 
-
           class Clicker(object):
+               """Click keys"""
                @staticmethod
                def press(key):
                     subprocess.getoutput(cmd='osascript -e \'tell application '
-                                             '"System Events" to keystroke "%s" using {shift down}\'' % str(key).upper())
+                                             '"System Events" to keystroke "%s" using {shift down}\'' % str(
+                         key).upper())
                     return 'Successful...'
-
 
           class Open(object):
                @staticmethod
@@ -674,7 +681,6 @@ if sys.platform == 'darwin':
                     cmd = f'open /Applications/Safari.app {url}'  # Select your main browser
                     return subprocess.getoutput(cmd=cmd)
                     # log(log='Successful...', level=4)
-
 
           class Sound(object):
                """
@@ -780,7 +786,6 @@ if sys.platform == 'darwin':
                     subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
                                              '/System/Library/Sounds/Sosumi.aiff -v 10; done' % iters)
 
-
           class AppConfigure(object):
                """App-settings"""
 
@@ -805,10 +810,7 @@ if sys.platform == 'darwin':
                          return subprocess.getoutput(
                               cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
 
-
           class FileConfig(object):
-
-
 
                def get_date_create_file(self, path):
                     """
@@ -828,33 +830,25 @@ if sys.platform == 'darwin':
 
                     return subprocess.getoutput(f'du -sh {path}').split('\t')[0].strip()
 
-
                def extension(self, path):
                     return str(path).split('.')[-1]
 
-
-
-
                def name(self, path):
-                   return path.split('/', maxsplit=3)[-1].split('.')[0]
-
+                    return path.split('/', maxsplit=3)[-1].split('.')[0]
 
                def get_files_in_folder(self, path: str):
                     """Return all files in folder"""
                     if not os.path.exists(path=path):
-                        raise FileExistsError
+                         raise FileExistsError
                     return subprocess.getoutput(cmd=f'ls {path}')
+
                def get_folder_size(self, path):
                     """Return all files in folder"""
-                    if   os.path.exists(path=path):
+                    if os.path.exists(path=path):
 
-                        return subprocess.getoutput(cmd=f'du -sh {path}').split()
+                         return subprocess.getoutput(cmd=f'du -sh {path}').split()
                     else:
                          raise FileExistsError
-
-
-
-
 
           class Volume(object):
                def __init__(self):
@@ -862,9 +856,12 @@ if sys.platform == 'darwin':
                     self.volume = 'osascript -e "set Volume %s"'
                     self.max_volume = 'osascript -e "set Volume 10"'
                     self.min_volume = 'osascript -e "set Volume 0"'
+
                     self.muted = subprocess.getoutput(cmd='osascript -e \'get volume settings\'')
-                    self.input_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[3].replace(',', '')
-                    self.output_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[1].replace(',', '')
+                    self.input_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[
+                         3].replace(',', '')
+                    self.output_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[
+                         1].replace(',', '')
 
                def set_volume(self, volume):
 
@@ -886,22 +883,65 @@ if sys.platform == 'darwin':
                def get_output_volume_percent(self):
                     """
                     Return output volume percent
-                    :return: 
+                    :return:
                     """
 
                     return self.output_volume
 
-               
                @property
                def get_input_volume_percent(self):
                     """
                     Return input volume percent
-                    :return: 
+                    :return:
                     """
                     return self.input_volume
 
                def ismuted(self):
                     return self.muted.split(', ')[-1].split(':')[-1].capitalize()
+
+               def increase_volume(self):
+                    def doKey(down):
+                         # NSEvent.h script
+                         NSSystemDefined = 14
+                         eventInit = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                              NSSystemDefined,
+                              (0, 0),
+                              0xa00 if down else 0xb00,
+                              0,
+                              0,
+                              0,
+                              8,
+                              (0 << 16) | ((0xa if down else 0xb) << 8),
+                              -1
+                         )
+                         cev = eventInit.CGEvent()
+                         Quartz.CGEventPost(0, cev)
+
+                    doKey(True)
+                    doKey(False)
+               def decrease_volume(self):
+                    """set volume in 1 division less"""
+                    def doKey(down):
+                         # NSEvent.h script
+                         NSSystemDefined = 14
+                         eventInit = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                              NSSystemDefined,
+                              (0, 0),
+                              0xa00 if down else 0xb00,
+                              0,
+                              0,
+                              0,
+                              8,
+                              (1 << 16) | ((0xa if down else 0xb) << 8),  # data1
+                              -1  # data2
+                         )
+                         cev = eventInit.CGEvent()
+                         Quartz.CGEventPost(0, cev)
+
+                    doKey(True)
+                    doKey(False)
+
+
           class WifiSpeed(object):
                def __init__(self):
                     self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
@@ -917,9 +957,10 @@ if sys.platform == 'darwin':
                """Collect data in camera"""
 
                def __init__(self):
-                   self.cmd = '/opt/local/bin/ffmpeg -f avfoundation -t %s -framerate 30 -i "%s" -target pal-vcd ./%s.%s'
-                   self.devises = '[' + str(subprocess.getoutput(cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[-1])
-
+                    self.cmd = '/opt/local/bin/ffmpeg -f avfoundation -t %s -framerate 30 -i "%s" -target pal-vcd ./%s.%s'
+                    self.devises = '[' + str(subprocess.getoutput(
+                         cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[
+                                                  -1])
 
                def webcam_capture(self, record_time: int, camera_index, filename, extension):
                     """
@@ -935,7 +976,7 @@ if sys.platform == 'darwin':
                     if os.path.isfile(f'{filename}.{extension}'):
                          raise FileExistsError(f'Please, rename file {filename}.{extension}, because it already exist.')
                     else:
-                        return 'Check file is %s.%s' % (filename, extension)
+                         return 'Check file is %s.%s' % (filename, extension)
 
                @property
                def list_devises(self):
@@ -947,19 +988,21 @@ if sys.platform == 'darwin':
                     return '[' + str(self.devises.strip().split('[', maxsplit=1)[-1].split(': ')[0])
 
           class Mouse(object):
-               def __init__(self):
+               """Mouse events"""
+               def __init__(self, x, y):
                     location = AppKit.NSEvent.mouseLocation()
                     position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - location.y))
-                    self.x_position = position[0]
-                    self.y_position = position[1]
-               """Mouse events"""
-               
+                    self.x = position[0]
+                    self.y = position[1]
+
+
+
                @classmethod
                def EventInitScript(cls, ev, x, y, button):
                     """Initalizate mouse objc x: x-pos, y:y-pos"""
-                    mouseEvent = Quartz.CGEventCreateMouseEvent(None, ev, (x, y), button)
+                    mouseEvent = Quartz.CGEventCreateMouseEvent(None,
+                                                                ev, (x, y), button)
                     Quartz.CGEventPost(Quartz.kCGHIDEventTap, mouseEvent)
-                    
 
                def ClickEventInitScript(self, x, y, type):
                     """Click initalizate function"""
@@ -969,23 +1012,33 @@ if sys.platform == 'darwin':
                          (x, y),
                          Quartz.CoreGraphics.kCGMouseButtonLeft)
                     Quartz.CoreGraphics.CGEventPost(Quartz.CoreGraphics.kCGHIDEventTap, theEvent)
-                    
+
                @classmethod
                def mouse_move(cls, x, y):
-                    """Move mouse in pointed out possition"""
-                    cls._sendMouseEvent(Quartz.kCGEventMouseMoved, x, y, 0)
+                    """Move mouse in pointed out possition."""
+                    cls.EventInitScript(Quartz.kCGEventMouseMoved, x, y, 0)
+
 
                @classmethod
                def mouse_click(cls, x, y):
+                    """Click mouse in current position."""
                     cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseDown, x, y, button=2)
                     cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseUp, x, y, button=2)
+               @classmethod
+               def super_click(cls, x, y):
+                    """Make click and mouse-move."""
+                    theEvent = Quartz.CoreGraphics.CGEventCreateMouseEvent(None, 1, (x, y), Quartz.CoreGraphics.kCGMouseButtonLeft)
+                    Quartz.CoreGraphics.CGEventPost(Quartz.CoreGraphics.kCGHIDEventTap, theEvent)
 
-               @property
+
                def mouse_position(self):
-                    return self.x_position, self.y_position
+                    """Return mouse position"""
+
+                    return self.x, self.y
+
 
 
 if __name__ == '__main__':
-    exit(1)
-     
+     exit(1)
+
 
