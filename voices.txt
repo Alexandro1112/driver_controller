@@ -1,4 +1,4 @@
-# Main voices
+# Examples.
 say -v Alex -i Hello!
 say -v Alice -i Hello!
 say -v Alva -i Hello!
