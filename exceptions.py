@@ -8,11 +8,6 @@ class ApplicationNameError(NameError):
      App with pointed out name not exist.
      """
 
-class UseLinuxTerminal(OSError):
-     """
-    Linux version already working.
-    """
-
 
 class ApplicationNotExist(SystemError):
      """
