@@ -927,7 +927,7 @@ if sys.platform == 'darwin':
                          eventInit = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,
                               (0, 0),
-                              0xa00 if down else 0xb00,
+                              0xa00 if down else 0xb00,# Key - unicode (vol min)
                               0,
                               0,
                               0,
@@ -989,7 +989,7 @@ if sys.platform == 'darwin':
 
           class Mouse(object):
                """Mouse events"""
-               def __init__(self, x, y):
+               def __init__(self):
                     location = AppKit.NSEvent.mouseLocation()
                     position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - location.y))
                     self.x = position[0]
