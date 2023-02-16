@@ -920,14 +920,13 @@ if sys.platform == 'darwin':
                     doKey(True)
                     doKey(False)
                def decrease_volume(self):
-                    """set volume in 1 division less"""
                     def doKey(down):
                          # NSEvent.h script
                          NSSystemDefined = 14
                          eventInit = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,
                               (0, 0),
-                              0xa00 if down else 0xb00,# Key - unicode (vol min)
+                              0xa00 if down else 0xb00,
                               0,
                               0,
                               0,
@@ -1035,6 +1034,16 @@ if sys.platform == 'darwin':
                     """Return mouse position"""
 
                     return self.x, self.y
+          class Theme:
+               """Change color mode by dark/light"""
+               def __init__(self):
+                    self.cmd = 'osascript -e \'tell app \"System Events" to tell appearance preferences to set dark mode to not dark mode\''
+
+               def change_color_mode(self, timeout):
+                    sleep(timeout)
+                    subprocess.getoutput(cmd=self.cmd)
+
+
 
 
 
