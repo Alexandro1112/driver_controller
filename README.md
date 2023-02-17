@@ -2,8 +2,9 @@
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
 # driver_controller
-This lib will help you change brightness, output , connecting to wifi-network, bluetooth device.You can use this utility for your python project.
-In the github repository local submodules, install them - not need
+This lib will help you change brightness, output available gadgets for mac, connecting to wifi-network, bluetooth device.You can use this utility for your python project.
+In the github repository local submodules, install them - not need.However code not working - install them, run script
+# install_deepindensies.sh
 # Installation
 <p> git clone https://github.com/Alexandro1112/driver-controler<p>
      <h3>After, import them. Explore main abillity this library. <h3>
@@ -31,7 +32,7 @@ print(driver_controller.Connector().connect_wifi_network(wifi_network='<WIFI_NAM
   subtitle: Subtitle of message<br>
   text: Description of message<br>
  :param file_icon: Icon in message (Path to image)<br>
- (must local in project-folder) Point out [None]<br>
+ (must local in project-folder), Point out [None]<br>
  if you don't want used icon.<h4>
 
 ```
@@ -57,7 +58,7 @@ print(driver_controller.MacCmd().Clicker().press(button='a')
 ``` 
 import driver_controller
 
-print(driver_controller.MacCmd().Brightness().set_brightness(number))
+print(driver_controller.MacCmd().Brightness().set_brightness(20))
 ``` 
 
 # Enable/unplug wifi/bluetooth.
@@ -78,7 +79,7 @@ import driver_controller
 print(driver_controller.MacCmd().ScreenCapture().screenshot(filename='screenshot', extension='jpg', pause=2))
 ``` 
 
-#  Create photo in your webcam
+#  Create photo in your webcamera.
 <h2> Method make image trough web-camera
      cam_index: index where local camera
      extension: extension of created image
