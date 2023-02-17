@@ -1,3 +1,6 @@
+
+
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
 # driver_controller
 This lib will help you change brightness, output , connecting to wifi-network, bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need
@@ -141,4 +144,8 @@ percent = int(input())
 
 driver_controller.MacCmd().Volume().set_volume(percent)
 ```
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+
 <h1> That was main methods this python library. Exist even linux version.<h1>
+
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
