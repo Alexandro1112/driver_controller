@@ -4,10 +4,13 @@
 # driver_controller
 This lib will help you change brightness, output available gadgets for mac, connecting to wifi-network, bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need.However code not working - install them, run script
-# install_deepindensies.sh
+> install_deepindensies.sh
 # Installation
-<p> git clone https://github.com/Alexandro1112/driver-controler<p>
-     <h3>After, import them. Explore main abillity this library. <h3>
+> git clone https://github.com/Alexandro1112/driver-controler
+
+
+    
+<h3>After, import them. Explore main abillity this library. <h3>
      
 # Lets try outputting all bluetooth/microphones in python.
 
@@ -53,7 +56,8 @@ print(driver_controller.MacCmd().Clicker().press(button='a')
 ``` 
      
 # Set brightness of screen.
-     
+* You must install brew and brightness.  
+* Use increase/dicrease brightness if brew is not install.
      
 ``` 
 import driver_controller
@@ -80,11 +84,11 @@ print(driver_controller.MacCmd().ScreenCapture().screenshot(filename='screenshot
 ``` 
 
 #  Create photo in your webcamera.
-<h2> Method make image trough web-camera
+<h4> Method make image trough web-camera
      cam_index: index where local camera
      extension: extension of created image
      filename: name of created file.
-<h2>
+<h4>
 
      
      
@@ -107,10 +111,10 @@ print(MacCmd().SystemConfig().get_processor_name,# Intel(R) Core(TM) i7-4850HQ C
 ``` 
 
 # Stream video in your webcamera 
-# record_time : time of recording(seconds)
-# camera_index: camera index
-# filename: name of created file
-# extensions, maybe mkv, mp4, mpg
+> record_time : time of recording(seconds)
+> camera_index: camera index
+> filename: name of created file
+> extensions, maybe mkv, mp4, mpg
 
 ``` 
 from driver_controller import MacCmd
@@ -147,6 +151,6 @@ driver_controller.MacCmd().Volume().set_volume(percent)
 ```
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
 
-<h1> That was main methods this python library. Exist even linux version.<h1>
+<h1> That was main methods this python library. Exist even linux version. windows, while there less possibilities.<h1>
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
