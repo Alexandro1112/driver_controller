@@ -6,12 +6,14 @@
 # control devises and much more.Soon be cross-platform.
 # |---------------------------------------------------------------------------------------------------------------------|
 #                                                   ||PYTHON-INSTALLATION||
-# If you cloned this repository trough github, dependencies commands such as [blueutil, brew, brightness]
+# If you cloned this repository trough github,
+# dependencies commands such as [blueutil, brew, brightness, ffmpeg, terminal-notifier]
 # successful installed. Dont forget about commands:
-# I COMMAND - [ pip3 install loger]
-# II COMMAND = [ pip3 install plyer]
-# III COMMAND = [ pip3 install sounddevice]
-# If code not working, though git submodules exist in git-hub repository: complete few commands:
+# I COMMAND - [ pip3 install loger ]
+# II COMMAND = [ pip3 install plyer ]
+# III COMMAND = [ pip3 install sounddevice ]
+# If code not working, though git submodules
+# exist in git-hub repository: complete few commands:
 # INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
 # REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil ||
@@ -36,46 +38,65 @@
 # TODO: Make more classes
 #                                            Finally, run code.
 
-# for full paths
-import pathlib
-# all process
-import subprocess
-# check platform OS
-import sys
-# Unplug warnings, unexpected errors
-from warnings import filterwarnings
-from shutup import please
-
-# Mouse-click
-import Quartz
-import Quartz.CoreGraphics
-
-# pause for methods
-from time import (sleep, ctime)
-# for get list applications
-from psutil import process_iter
-# Constants
-from .CONSTANTS import CONSTANT_SOUNDS
-# Log-alerts
-from loger import *
-# Sound-devises
-from sounddevice import query_devices
-
-# Exceptions for methods
-from .exceptions import *
-
-import AppKit
-
-# For collecting data in system files
-import objc
 
 # Os
 import os
 
+# for full paths
+import pathlib
+
+# all process
+import subprocess
+
+# check platform OS
+import sys
+
+# Unplug warnings, unexpected errors
+from warnings import filterwarnings
+
+# pause for methods
+from time import (sleep, ctime)
+
+# Constants
+from .CONSTANTS import CONSTANT_SOUNDS
+
+import platform
+
+# Exceptions for methods
+from .exceptions import *
+try:
+     # Mouse-click
+     import Quartz
+     import Quartz.CoreGraphics
+
+
+     # for get list applications
+     from psutil import process_iter
+
+     # Log-alerts
+     from loger import *
+     # Sound-devises
+     from sounddevice import query_devices
+     # Screen size
+     import AppKit
+
+     # For collecting data in system files
+     from objc._framework import infoForFramework
+     import objc
+
+     # Unplug warnings, unexpected errors
+     from shutup import please
+except:
+     assert 'Installing Quartz, psutil, loger, pyobjc, AppKit, sounddevice'
+     # subprocess.Popen(['pip', 'install', 'Quartz, psutil, loger, pyobjc, AppKit, sounddevice'])
+
+
 __all__ = ['MacCmd', 'CONSTANT_SOUNDS']
 
-if sys.platform == 'darwin':
-     class MacCmd(object):
+if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and \
+        int(sys.version.split(' | ')[0].split('.')[0]) >= 3 and \
+        int(sys.version.split(' | ')[0].split('.')[1]) >= 7: # Mac version from 10.6 until 10.8 not support.
+     class MacCmd:
 
           class OutputListsDevises(object):
                """ Return output devises """
@@ -85,13 +106,17 @@ if sys.platform == 'darwin':
                     self.devises = query_devices()
 
                def get_list_wifi_networks(self):
+                    if 'loadBundle' in dir(objc):
+                         pass
+                    else:
+                         raise AttributeError
                     """ Function output all wi-fi networks,
                        which available for your devise."""
 
                     wifi = []
                     wifi2 = []
                     bundle_path = '/System/Library/Frameworks/CoreWLAN.framework'
-                    objc.loadBundle('CoreWLAN', bundle_path=bundle_path, module_globals=globals())
+                    objc.loadBundle(infoForFramework(bundle_path)[1], bundle_path=bundle_path, module_globals=globals())
 
                     response = CWInterface.interface()
                     r = response.scanForNetworksWithName_includeHidden_error_(None, True, None)
@@ -142,7 +167,7 @@ if sys.platform == 'darwin':
                          raise WifiNameConnectError(f'Could not find network {wifi_network}')
 
                     else:
-                         log(f'You successful connected to wifi network {wifi_network}', level=4)
+                         log(f'You successful connected to wifi network "{wifi_network}"', level=4)
                def disconnect(self):
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi off')
 
@@ -294,6 +319,7 @@ if sys.platform == 'darwin':
                     self.disk_mem = 'diskutil list | grep GUID_partition_scheme'  # Diskutil not found: https://superuser.com/questions/213088/diskutil-command-not-found-in-os-x-terminal
                     self.video_crd_nm = subprocess.getoutput(
                          cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')  # system profiler: command not found https://github.com/jlhonora/lsusb/issues/12?ysclid=ldu37f5jk9865312203
+                    self.temp = subprocess.getoutput(cmd='sysctl machdep.xcpm.cpu_thermal_level sysctl machdep.xcpm.gpu_thermal_level')
 
                @property
                def devise_battery(self):
@@ -358,10 +384,16 @@ if sys.platform == 'darwin':
                def get_video_card_name(self):
                     return self.video_crd_nm.strip().split(':')[-1]
 
+               @property
+               def sensor_temperature(self):
+
+
+                    return str(round(int(self.temp.split('\n')[-1].split(':')[-1]) / 2.64690312335)) + str('˚C') # fahrenheit -> gradus
+
           class VoiceOver(object):
                """Voiceover text"""
 
-               def text_voiceover(self, voice, text=None):
+               def text_voiceover(self, voice, text):
                     """
                  Send voice notify with text,
                  which you point out.
@@ -397,7 +429,7 @@ if sys.platform == 'darwin':
                   """
 
                     password = subprocess.getoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')
-                    if not name_wifi_network in subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.'
+                    if name_wifi_network in subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.'
                                                                          'framework/Versions/A/Resources/airport scan') or \
                             subprocess.getstatusoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')[
                                  0] == 0:
@@ -862,6 +894,8 @@ if sys.platform == 'darwin':
                          3].replace(',', '')
                     self.output_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[
                          1].replace(',', '')
+                    self.alert_vol = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[5].replace(',', '')
+
 
                def set_volume(self, volume):
 
@@ -895,6 +929,10 @@ if sys.platform == 'darwin':
                     :return:
                     """
                     return self.input_volume
+
+               @property
+               def get_alert_volume(self):
+                    return self.alert_vol
 
                def ismuted(self):
                     return self.muted.split(', ')[-1].split(':')[-1].capitalize()
@@ -988,11 +1026,17 @@ if sys.platform == 'darwin':
 
           class Mouse(object):
                """Mouse events"""
+
                def __init__(self):
-                    location = AppKit.NSEvent.mouseLocation()
-                    position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - location.y))
-                    self.x = position[0]
-                    self.y = position[1]
+                    try:
+                         location = AppKit.NSEvent.mouseLocation()
+                         position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - round(location.y)))
+                         self.x = position[0]
+                         self.y = position[1]
+                    except AttributeError:
+                         return
+
+
 
 
 
@@ -1004,6 +1048,7 @@ if sys.platform == 'darwin':
                     Quartz.CGEventPost(Quartz.kCGHIDEventTap, mouseEvent)
 
                def ClickEventInitScript(self, x, y, type):
+
                     """Click initalizate function"""
                     theEvent = Quartz.CoreGraphics.CGEventCreateMouseEvent(
                          None,
@@ -1024,28 +1069,26 @@ if sys.platform == 'darwin':
                     cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseDown, x, y, button=2)
                     cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseUp, x, y, button=2)
                @classmethod
-               def super_click(cls, x, y):
+               def move_click(cls, x, y):
                     """Make click and mouse-move."""
                     theEvent = Quartz.CoreGraphics.CGEventCreateMouseEvent(None, 1, (x, y), Quartz.CoreGraphics.kCGMouseButtonLeft)
                     Quartz.CoreGraphics.CGEventPost(Quartz.CoreGraphics.kCGHIDEventTap, theEvent)
 
-
+               @property
                def mouse_position(self):
                     """Return mouse position"""
-
                     return self.x, self.y
+
           class Theme:
-               """Change color mode by dark/light"""
                def __init__(self):
-                    self.cmd = 'osascript -e \'tell app \"System Events" to tell appearance preferences to set dark mode to not dark mode\''
+                    self.cmd = 'osascript -e \'tell app "System Events" to tell appearance ' \
+                               'preferences to set dark mode to not dark mode\''
 
-               def change_color_mode(self, timeout):
-                    sleep(timeout)
+               def change_color_mode(self, pause: [int, float, complex]):
+                    sleep(pause)
                     subprocess.getoutput(cmd=self.cmd)
-
-
-
-
+else:
+     raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
 if __name__ == '__main__':
      exit(1)
