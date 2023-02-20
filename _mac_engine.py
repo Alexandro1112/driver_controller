@@ -57,6 +57,8 @@ from warnings import filterwarnings
 # pause for methods
 from time import (sleep, ctime)
 
+import DVDPlayback
+
 # Constants
 from .CONSTANTS import CONSTANT_SOUNDS
 
@@ -462,8 +464,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     else:
                          raise TypeError
 
-               def send_lateral_message(self, label, subtitle, text, file_icon: [None, str],
-                                        sound: [None, CONSTANT_SOUNDS], content_img=None):
+               def send_lateral_message(self, label, activate: [None, str], subtitle, text, file_icon: str,
+                                        sound: [None, CONSTANT_SOUNDS], content_img=None, ):
                     """
                   Make Lateral message with:
                   :param label: Main title on message
@@ -474,22 +476,30 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                   (must local in project-folder) Point out [None]
                   if you don't want used icon
                   :return: Successful.
+
                   """
-                    if len(file_icon.split()) > 1 or len(content_img.split()) > 1:
+                    if activate in (i.name() for i in process_iter()) or activate is None:
+                         pass
+                    else:
+                         raise  ApplicationNotExist
+                    if len(str(file_icon).split()) > 1 or len(str(content_img).split()) > 1:
                          fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + repr(str(file_icon))
                          content = str(pathlib.Path(str(content_img)).cwd()) + '/' + repr(str(content_img))
-                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage {content}" % (
+                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage '{content}' -activate 'com.apple.{activate if activate is not None else ''}'" % (
                               label, subtitle, text, fullpath)
                          commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
+
+
                     else:
                          fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
                          content2 = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
-                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage {content2}"% (
+                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage '{content2}' -activate 'com.apple.{activate}'"% (
                          label, subtitle, text, fullpath)
                          commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
 
                     subprocess.getoutput(cmd=commands)
                     subprocess.getstatusoutput(cmd=commands2)
+
 
                def send_entry_alert(self, title, button1, button2, entr_text=''):
                     """
@@ -521,8 +531,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     :param extension: Extension of created file
                     :return: Successful.
                     """
-                    if name == '':
+                    if name != '':
                          subprocess.getoutput(cmd=str('touch ') + str(name) + str('.') + str(extension))
+                    else:
+                         raise NameError from ''
 
                def create_folder(self, name):
                     """
@@ -634,7 +646,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  """
                     if extension in self.AVAILABLE_EXTENSIONS:
                          if os.path.isfile(f'{filename}.{extension}'):
-                              raise FileExistsError(f'Please, rename file {filename}.{extension}, him already exist.')
+                              raise FileExistsError(f'Please, rename file {filename}.{extension},because him already exist.')
                          else:
 
                               print('recording...')
@@ -828,10 +840,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     :return: Size in megabytes/gigabytes
                     """
                     path = f'du -sh /Applications/{app_name}.app'
-                    if subprocess.getstatusoutput(cmd=path)[0] == 1:
+                    if app_name not in (i.name() for i in process_iter()):
                          raise ApplicationNameError
                     else:
-                         return subprocess.getoutput(cmd=path)
+                         return subprocess.getoutput(cmd=path).split()[0]
 
                def get_full_path_by_app_name(self, app):
                     if subprocess.getstatusoutput(
@@ -964,7 +976,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          eventInit = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,
                               (0, 0),
-                              0xa00 if down else 0xb00,
+                              0xa00 if down else 0xb00,# F11/F12 KEY
                               0,
                               0,
                               0,
@@ -1087,6 +1099,18 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def change_color_mode(self, pause: [int, float, complex]):
                     sleep(pause)
                     subprocess.getoutput(cmd=self.cmd)
+
+
+          class Copy:
+               def copyText(self, text):
+
+                    init = AppKit.NSStringPboardType
+
+                    pb = AppKit.NSPasteboard.generalPasteboard()
+                    pb.declareTypes_owner_([init], None)
+                    newStrIng = AppKit.NSString.stringWithString_(text)
+                    newData = newStrIng.nsstring().dataUsingEncoding_(AppKit.NSUTF8StringEncoding)
+                    pb.setData_forType_(newData, init)
 else:
      raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
