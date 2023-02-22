@@ -1,4 +1,4 @@
-<img style="display: block; align-items: center; justify-content: center; width: 350px; height: 355px; border-radius:20px;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
+<img style="display: block; align-items: center; justify-content: center; width: 355px; height: 365px; border-radius:20px;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
@@ -255,7 +255,7 @@ import driver_controller._mac_engine
 
 sound = driver_controller._mac_engine.MacCmd().Sound()
 
-sound.playSoundByName(soundfile='yoursound.mp3')
+sound.playSoundByName(soundfile='yoursound.mp3')# sound name 
 ```
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
