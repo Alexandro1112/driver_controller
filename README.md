@@ -233,7 +233,7 @@ driver_controller._mac_engine.MacCmd().Theme().change_color_mode(pause=1)# Chang
 
 ```
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
-# Open something url. Second argument - browser, spotlight, and application.
+# Open something url. Second argument - browser,and Link.Also we can open spotlight, and application.
 
 ```
 import driver_controller._mac_engine
