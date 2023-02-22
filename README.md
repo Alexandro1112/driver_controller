@@ -2,8 +2,8 @@
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
-# driver_controller
-<h2<This lib will help you change brightness, output available gadgets for mac, connecting to wifi-network, bluetooth device.You can use this utility for your python project.<h2>
+# DIRVER_CONTROLLER
+This lib will help you change brightness, output available gadgets for mac, connecting to wifi-network, bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need.However code not working - install them, run script
 > install_deepindensies.sh
 # Installation
