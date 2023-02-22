@@ -35,6 +35,7 @@
 # How check this?
 # Finder -> Go -> Go to folder -> /System/
 # input the file-path which I wrote.
+# TESTED BY Mac Os Big Sur 11.4.7(+), Mac os Catalina(+) 10.15.7, Mac Os High Mojave(confirm osascript) 10.13
 # TODO: Make more classes
 #                                            Finally, run code.
 
@@ -166,7 +167,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                """Connect to wi-fi networks/ Data about wifi."""
                def __init__(self):
                     self.interface = CoreWLAN.CWInterface.interfaceWithName_("en0")
-                    self.interface = CoreWLAN.CWInterface.interfaceWithName_("en0")
+
                     self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
                     self.last_speed = subprocess.getoutput(cmd='airport -I | grep lastTxRate')
                     self.secT = subprocess.getoutput(cmd='airport -I | grep "link auth"')
@@ -197,36 +198,47 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def Connect(self):
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi on')
 
-               def connectToMacAddres(self):
-
+               def connectToMacAddress(self):
+                    """Connect to wi-fi which used your devise."""
                     self.interface.startHostAPMode_(None)
 
-               def WifiNetworkNoice(self):
-                    return int(self.interface.noice())
+               def WifiNetworkNoise(self):
+                    """Noise of current connected wi-fi network."""
+                    return int(self.interface.noise())
 
                def InfoNetwork(self):
+                    """Ruturn a lot of data about current wifi network"""
                     return str(self.interface.ipMonitor()).strip().split('>')[1]
 
                def ChannelGhz(self):
-                    return str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip()+']'
+                    """Ghz type channel.It is 2Ghz or 5Ghz."""
+                    if  str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip() == 'None':
+                         raise ConnectionRefusedError('Enable wi-fi, please.')
+                    return str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip()
 
                def RssiChannelValue(self):
                     return self.interface.aggregateRSSI()
 
-               def get_speed_by_current_network(self):
-                    return self.speed
+               def _get_speed_by_current_network(self): # Deleted method.
+                    raise NotImplementedError('Deleted method.')
 
                def get_last_speed_by_current_network(self):
-                    return self.last_speed
+                    return self.last_speed.strip().split(':')[-1]
 
                def isUsedProxy(self):
+                    """
+
+                    :return: [False] if proxy/VPN not used, [True] is Using.
+                    """
                     return self.interface.isProxy()
 
                def wifiChannel(self):
+                    """Return Wi-fi channel """
                     return self.interface.channel()
 
 
                def SecurityType(self):
+                    """Return security type of current wi-fi network"""
                     return self.secT.split(':')[-1]
 
           class Switching(object):
@@ -429,17 +441,17 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                @property
                def get_disk_memory(self):
+                    """Return disk meomory."""
                     return subprocess.getoutput(cmd=self.disk_mem).replace('*', '').split()[2] + 'Gb'
 
 
                @property
                def get_video_card_name(self):
+                    """Return vide card name"""
                     return self.video_crd_nm.strip().split(':')[-1]
 
                @property
                def sensor_temperature(self):
-
-
                     return str(round(int(self.temp.split('\n')[-1].split(':')[-1]) / 2.64690312335)) + str('˚C') # fahrenheit -> gradus
 
           class VoiceOver(object):
@@ -515,7 +527,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          raise TypeError
 
                def send_lateral_message(self, label, activate: [None, str], subtitle, text, file_icon: str,
-                                        sound: [None], content_img=None, ):
+                                        sound: [None], content_img=None):
                     """
                   Make Lateral message with:
                   :param label: Main title on message
@@ -525,13 +537,14 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                   :param file_icon: Icon in message (Path to image)
                   (must local in project-folder) Point out [None]
                   if you don't want used icon
+                  :param activate: application, which open when you click by notify.
                   :return: Successful.
 
                   """
                     if activate in (i.name() for i in process_iter()) or activate is None:
                          pass
                     else:
-                         raise  ApplicationNotExist
+                         raise ApplicationNotExist
                     if len(str(file_icon).split()) > 1 or len(str(content_img).split()) > 1:
                          fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + repr(str(file_icon))
                          content = str(pathlib.Path(str(content_img)).cwd()) + '/' + repr(str(content_img))
@@ -572,7 +585,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     return subprocess.getoutput(cmd=cmd)
 
           class Creator(object):
-               """Create anything"""
+               """Create something."""
 
                def create_file(self, name, extension):
                     """
@@ -584,7 +597,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     if name != '':
                          subprocess.getoutput(cmd=str('touch ') + str(name) + str('.') + str(extension))
                     else:
-                         raise NameError from ''
+                         raise NameError from None
 
                def create_folder(self, name):
                     """
@@ -614,11 +627,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  :return: Successful if created is passed.
                  (Available only on Mac-os)
                  """
-                    """
-                 |----------------------------------------------|
-                 |Available extensions for function "screenshot"|
-                 |----------------------------------------------|
-                 """
+
 
                     if extension in [i for i in self.AVAILABLE_EXTENSIONS]:
 
@@ -636,7 +645,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def video_capture(self, record_time, camera_index, microphone_index, filename, extension):
                     """
-                    Capture screen-video, click [q] for end video, and save them.
+                    Capture screen-video.
                     :param camera_index: Camera index where will be collected vide0
                     :param microphone_index: Microphone index, which used in video
                     :param filename: Name of file
@@ -685,7 +694,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  """
                     self.AVAILABLE_EXTENSIONS = (i for i in ('wav', 'mp3'))
 
-               def recorder(self, microphone_index: 0, extension, filename, record_time: int):
+               def recorder(self, microphone_index, extension, filename: str, record_time: int):
                     """
 
                  :param microphone_index: Microphone index
@@ -776,8 +785,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """  # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
                     cmd = f'open /Applications/{browser}.app {url}'  # Select your main browser
                     return subprocess.getoutput(cmd=cmd)
-                    
+
                def open_spotlight(self):
+                    """Open spotlight menu."""
                     MacCmd().Mouse().move_click(1212, 13)
           class Sound(object):
                """
