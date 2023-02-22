@@ -1,8 +1,9 @@
-<img style="display: block; align-items: center; justify-content: center; width: 355px; height: 365px; border-radius:20px;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
+<img style="display: block; align-items: center; justify-content: center; width: 365px; height: 355px;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
-# DIRVER_CONTROLLER
+<p><strong>DIRVER_CONTROLLER<strong><p>
+
 This lib will help you change brightness, output available gadgets for mac, connecting to wifi-network, bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need.However code not working - install them, run script
 > install_deepindensies.sh
