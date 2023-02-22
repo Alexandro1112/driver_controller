@@ -1,6 +1,6 @@
 from .info import *
 from.CONSTANTS import *
-
+from .exceptions import *
 # ---------------------- #
 # Initialize scripts 
 
@@ -17,10 +17,12 @@ elif platform == 'darwin':
 
     from ._mac_engine import *
 
-else:
+elif platform == 'win32':
 
     from ._windows_engine import *
 
+else:
+    raise OSError()
 
 
 if __name__ == '__main__':
