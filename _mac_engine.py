@@ -944,6 +944,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     return str(path).split('.')[-1]
 
                def name(self, path):
+                    """:return Name by path"""
                     return path.split('/', maxsplit=3)[-1].split('.')[0]
 
                def get_files_in_folder(self, path: str):
