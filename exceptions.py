@@ -33,13 +33,6 @@ class InvalidExtension(NameError):
     """
 
 
-class LinuxWhileNotSupport(NotImplementedError):
-     """
-    TODO:
-    make linux version library in a future.
-    """
-
-
 class WifiNameConnectError(NameError):
      """
     Password or SSID/Wi-fi name of Network is not right.
