@@ -1,4 +1,4 @@
-<img style="margin:0px auto; text-align:center;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
+<img style="display: block; align-items: center; justify-content: center; width: 350px; height: 355px; border-radius:20px;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
@@ -7,8 +7,7 @@ This lib will help you change brightness, output available gadgets for mac, conn
 In the github repository local submodules, install them - not need.However code not working - install them, run script
 > install_deepindensies.sh
 # Installation
-> git clone https://github.com/Alexandro1112/driver-controler
-
+> git clone https://github.com/Alexandro1112/driver_controller
 
     
 <h3>After, import them. Explore main abillity this library. <h3>
