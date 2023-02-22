@@ -1,28 +1,30 @@
 __all__ = [
-    "CONSTANT_SOUNDS"
+    "SOUNDS_SUBMARINE_SOUND",
+     'SOUNDS_PING_SOUND',
+     'SOUNDS_FUNK_SOUND',
+     'SOUNDS_POP_SOUND',
+     'SOUNDS_BLOW_SOUND',
+     'SOUNDS_GLASS_SOUND'
 ]
 
 
 # Sounds list
 
-class CONSTANT_SOUNDS:
-    class Submarinesound:
-          name = 'Submarine'
 
-    class Popsound:
-          name = 'Pop'
+SOUNDS_SUBMARINE_SOUND = 'Submarine'
 
-    class Funksound:
-          name = 'Funk'
-
-    class Glasssound:
-          name = 'Glass'
-
-    class Pingsound:
-          name = 'Ping'
-
-    class Blowsound:
-          name = 'Blow'
+SOUNDS_POP_SOUND = 'Pop'
 
 
+SOUNDS_FUNK_SOUND = 'Funk'
 
+
+SOUNDS_GLASS_SOUND = 'Glass'
+
+SOUNDS_PING_SOUND = 'Ping'
+
+
+SOUNDS_BLOW_SOUND = 'Blow'
+
+
+# END
