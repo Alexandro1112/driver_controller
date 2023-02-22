@@ -57,20 +57,29 @@ from warnings import filterwarnings
 # pause for methods
 from time import (sleep, ctime)
 
-import DVDPlayback
 
 # Constants
-from .CONSTANTS import CONSTANT_SOUNDS
+from .CONSTANTS import (SOUNDS_GLASS_SOUND,
+     SOUNDS_BLOW_SOUND,
+     SOUNDS_POP_SOUND,
+     SOUNDS_SUBMARINE_SOUND,
+     SOUNDS_PING_SOUND,
+     SOUNDS_FUNK_SOUND)
 
 import platform
 
 # Exceptions for methods
 from .exceptions import *
 try:
+     from mutagen.mp3 import MP3
+
      # Mouse-click
      import Quartz
      import Quartz.CoreGraphics
 
+
+     # Play sound
+     import Foundation
 
      # for get list applications
      from psutil import process_iter
@@ -82,18 +91,20 @@ try:
      # Screen size
      import AppKit
 
+     import CoreWLAN
+
      # For collecting data in system files
      from objc._framework import infoForFramework
-     import objc
+     import objc._objc
 
      # Unplug warnings, unexpected errors
      from shutup import please
 except:
      assert 'Installing Quartz, psutil, loger, pyobjc, AppKit, sounddevice'
-     # subprocess.Popen(['pip', 'install', 'Quartz, psutil, loger, pyobjc, AppKit, sounddevice'])
 
 
-__all__ = ['MacCmd', 'CONSTANT_SOUNDS']
+
+__all__ = ['MacCmd', 'CONSTANTS']
 
 if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and \
         int(sys.version.split(' | ')[0].split('.')[0]) >= 3 and \
@@ -108,20 +119,23 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     self.devises = query_devices()
 
                def get_list_wifi_networks(self):
+                    """ Function output all wi-fi networks,
+                    which available for your devise."""
                     if 'loadBundle' in dir(objc):
                          pass
                     else:
                          raise AttributeError
-                    """ Function output all wi-fi networks,
-                       which available for your devise."""
 
                     wifi = []
                     wifi2 = []
                     bundle_path = '/System/Library/Frameworks/CoreWLAN.framework'
-                    objc.loadBundle(infoForFramework(bundle_path)[1], bundle_path=bundle_path, module_globals=globals())
 
-                    response = CWInterface.interface()
+                    dir(objc._objc.loadBundle(infoForFramework(bundle_path)[1], bundle_path=bundle_path,
+                                                module_globals=globals()))
+
+                    response = CoreWLAN.CWInterface.interface()
                     r = response.scanForNetworksWithName_includeHidden_error_(None, True, None)
+
                     for i in range(1, len(str(r).split('>')), 2):
                          wifi.append(str(r).split('>')[i].split(',')[0] + ']')
 
@@ -148,14 +162,21 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     return self.devises
 
-          class Connector(object):
-               """Connect to wi-fi networks"""
+          class Wifi(object):
+               """Connect to wi-fi networks/ Data about wifi."""
+               def __init__(self):
+                    self.interface = CoreWLAN.CWInterface.interfaceWithName_("en0")
+                    self.interface = CoreWLAN.CWInterface.interfaceWithName_("en0")
+                    self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
+                    self.last_speed = subprocess.getoutput(cmd='airport -I | grep lastTxRate')
+                    self.secT = subprocess.getoutput(cmd='airport -I | grep "link auth"')
+
+
 
                @staticmethod
                def connectTo(wifi_network, password):
                     """
                  Auto connect to wi-fi network.
-
                  :param wifi_network: Wi-fi name, which you would to connect.
                  :param password: Password of this Network.(use hide variable)
                  :return: 'Successful...' if you successfully connect to wi-fi.
@@ -170,11 +191,43 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     else:
                          log(f'You successful connected to wifi network "{wifi_network}"', level=4)
-               def disconnect(self):
+               def Disconnect(self):
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi off')
 
-               def connect(self):
+               def Connect(self):
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi on')
+
+               def connectToMacAddres(self):
+
+                    self.interface.startHostAPMode_(None)
+
+               def WifiNetworkNoice(self):
+                    return int(self.interface.noice())
+
+               def InfoNetwork(self):
+                    return str(self.interface.ipMonitor()).strip().split('>')[1]
+
+               def ChannelGhz(self):
+                    return str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip()+']'
+
+               def RssiChannelValue(self):
+                    return self.interface.aggregateRSSI()
+
+               def get_speed_by_current_network(self):
+                    return self.speed
+
+               def get_last_speed_by_current_network(self):
+                    return self.last_speed
+
+               def isUsedProxy(self):
+                    return self.interface.isProxy()
+
+               def wifiChannel(self):
+                    return self.interface.channel()
+
+
+               def SecurityType(self):
+                    return self.secT.split(':')[-1]
 
           class Switching(object):
                """Switch wi-fi/bluetooth"""
@@ -307,10 +360,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def __init__(self):
                     self.percent = subprocess.getoutput(cmd="pmset -g batt").split()[7].replace(";", r"")
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
-                    airport = pathlib.Path(
-                         "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport")
-                    self.network = subprocess.getoutput(
-                         cmd=f"{airport} -I | awk '/ SSID/ {{print substr($0, index($0, $2))}}'").capitalize()
+                    self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
                     self.size = \
                     subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[
                          1].split(' ')
@@ -349,7 +399,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  (Available only on Mac-os)
                  """
 
-                    return self.network.capitalize()
+                    return self.net
 
                @property
                def screen_size(self):
@@ -465,7 +515,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          raise TypeError
 
                def send_lateral_message(self, label, activate: [None, str], subtitle, text, file_icon: str,
-                                        sound: [None, CONSTANT_SOUNDS], content_img=None, ):
+                                        sound: [None], content_img=None, ):
                     """
                   Make Lateral message with:
                   :param label: Main title on message
@@ -682,9 +732,11 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  Name of App which will
                  be close.
                  :return: [None]
+
                  """
                     subprocess.getoutput(cmd=f'pkill {application_name}')
                     return 'Successful...'
+
 
           class Clicker(object):
                """Click keys"""
@@ -713,7 +765,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          return 'Successful...'
 
                @staticmethod
-               def url(url):
+               def url(url, browser):
                     """
                     Open url in main browser
                     DEFAULT BROWSER: Safari.
@@ -722,16 +774,17 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     :param url: 
                     :return: 
                     """  # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
-                    cmd = f'open /Applications/Safari.app {url}'  # Select your main browser
+                    cmd = f'open /Applications/{browser}.app {url}'  # Select your main browser
                     return subprocess.getoutput(cmd=cmd)
-                    # log(log='Successful...', level=4)
-
+                    
+               def open_spotlight(self):
+                    MacCmd().Mouse().move_click(1212, 13)
           class Sound(object):
                """
              class Voice add more available
              voices & effects(which beforehand
              installed in Mac-os by path /System/Library/Sounds/)
-             (Available only on Mac-os)
+             (Available only on Mac-os). And play other sounds.
              """
 
                def __init__(self):
@@ -829,6 +882,19 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  """
                     subprocess.getoutput(cmd='for i in {1..%s}; do afplay '
                                              '/System/Library/Sounds/Sosumi.aiff -v 10; done' % iters)
+               def playSoundByName(self, soundfile):
+
+                    url = Foundation.NSURL.URLWithString_('file:' + str(pathlib.Path(soundfile).cwd()) + str('/') + soundfile)
+
+                    self.duration_Start = AppKit.NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
+                    try:
+                         self.duration_Start.play()
+
+                         sleep(float(self.duration_Start.duration()))
+
+                    except AttributeError as e:
+
+                         raise PathError() from e
 
           class AppConfigure(object):
                """App-settings"""
@@ -991,16 +1057,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     doKey(False)
 
 
-          class WifiSpeed(object):
-               def __init__(self):
-                    self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
-                    self.last_speed = subprocess.getoutput(cmd='airport -I | grep lastTxRate')
-
-               def get_speed_by_current_network(self):
-                    return self.speed
-
-               def get_last_speed_by_current_network(self):
-                    return self.last_speed
 
           class WebCameraCapture(object):
                """Collect data in camera"""
@@ -1103,7 +1159,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
           class Copy:
                def copyText(self, text):
-
                     init = AppKit.NSStringPboardType
 
                     pb = AppKit.NSPasteboard.generalPasteboard()
@@ -1115,6 +1170,9 @@ else:
      raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
 if __name__ == '__main__':
-     exit(1)
+     try:
+          exit(1)
+     except KeyboardInterrupt:
+          pass
 
 
