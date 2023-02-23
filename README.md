@@ -112,15 +112,26 @@ import driver_controller
 
 print(driver_controller.MacCmd().Clicker().press(button='a')
 ``` 
-     
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png)      
 # Set brightness of screen.
 * You must install brew and brightness.  
-* Use increase/dicrease brightness if brew is not install.
+* Use increase/dicrease brightness if homebrew and "birghtness" is not install.
      
 ``` 
-import driver_controller
 
-print(driver_controller.MacCmd().Brightness().set_brightness(20))
+import driver_controller._mac_engine
+
+br = driver_controller._mac_engine.MacCmd().Brightness()
+br.set_birghtness(20) # Set birghtness
+br.increase_brightness(3) # increase brightness by 3 division 
+
+br.decrease_brightness(3) # decrease brightness by 3 division 
+print(br.get_brightness) # Print brightness percent
+
+br.set_max_brightness()
+
+br.set_min_brightness()
+
 ``` 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
@@ -144,7 +155,7 @@ import driver_controller
 
 print(driver_controller.MacCmd().ScreenCapture().screenshot(filename='screenshot', extension='jpg', pause=2))
 ``` 
-
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
 #  Create photo in your webcamera.
 <h4> Method make image trough web-camera
      cam_index: index where local camera
@@ -273,6 +284,19 @@ print(mouse.mouse_position) # Return mouse position (x,y)
 mouse.mouse_move(1300, 300) # Move mouse in position x=1300, y=300
 
 mouse.move_click(600, 70) # Move, and click in position x=600, y=70
+```
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+# Get some data about applications
+```
+import driver_controller._mac_engine
+
+size = driver_controller._mac_engine.MacCmd().AppConfigure().get_app_size('Yandex')
+d = driver_controller._mac_engine.MacCmd().FileConfig().get_date_create_file('/Applications/Yandex.app')
+path = driver_controller._mac_engine.MacCmd().AppConfigure().get_full_path_by_app_name('Safari')
+print(size, ',', path, ',', d)
+# 295M , /Applications/Safari.app , Thu Dec  5 22:30:38 2019
+
+
 ```
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
