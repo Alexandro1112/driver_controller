@@ -909,26 +909,26 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
           class AppConfigure(object):
                """App-settings"""
 
+               def get_full_path_by_app_name(self, app):
+                    if subprocess.getstatusoutput(
+                            cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[
+                         0] == 1:
+                         raise ApplicationNotExist
+                     else:
+                         return subprocess.getoutput(
+                              cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
+
                def get_app_size(self, app_name):
                     """
                     Return size of app by him name.
                     :param app_name: App name, which exist in /Applications/<NAME>.app
                     :return: Size in megabytes/gigabytes
                     """
-                    path = f'du -sh /Applications/{app_name}.app'
+                    path = f'du -sh {self.get_full_path_by_app_name(app_name)}'
                     if app_name not in (i.name() for i in process_iter()):
                          raise ApplicationNameError
                     else:
                          return subprocess.getoutput(cmd=path).split()[0]
-
-               def get_full_path_by_app_name(self, app):
-                    if subprocess.getstatusoutput(
-                            cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[
-                         0] == 1:
-                         raise ApplicationNotExist
-                    else:
-                         return subprocess.getoutput(
-                              cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
 
           class FileConfig(object):
 
@@ -1174,6 +1174,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     pb = AppKit.NSPasteboard.generalPasteboard()
                     pb.declareTypes_owner_([init], None)
+                    
                     newStrIng = AppKit.NSString.stringWithString_(text)
                     newData = newStrIng.nsstring().dataUsingEncoding_(AppKit.NSUTF8StringEncoding)
                     pb.setData_forType_(newData, init)
