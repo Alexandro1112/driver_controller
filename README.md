@@ -2,7 +2,7 @@
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
-<p><strong>DIRVER_CONTROLLER<strong><p>
+<p><strong>DRIVER_CONTROLLER<strong><p>
 
 This lib will help you change system settings such as brightness, volume, color- mode, control your mouse,send notification,open windows, outputing available gadgets , connecting to wifi-network, enable/disable bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need.However code not working - install them, run script
