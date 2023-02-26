@@ -1,6 +1,6 @@
 """
 
-Individual exceptions for pyTerminalproccesosx
+Individual exceptions for driver_controller
 
 """
 class ApplicationNameError(NameError):
@@ -34,7 +34,7 @@ class InvalidExtension(NameError):
 
 
 class WifiNameConnectError(NameError):
-     """
+    """
     Password or SSID/Wi-fi name of Network is not right.
     """
 
@@ -52,4 +52,8 @@ class WifiValueError(ValueError, BaseException):
 
 
 class ExtensionError(ValueError):
+     pass
+
+
+class PathError(FileNotFoundError):
      pass
