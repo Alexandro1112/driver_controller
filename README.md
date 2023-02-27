@@ -105,12 +105,13 @@ driver_controller.MacCmd().Notifier().send_lateral_message(label='<YOUR_LABEL>',
 ``` 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png)     
-# Click on buttons? It is possiable.
+# Click on buttons? It is possiable.May be even wirte word.
 
 ``` 
 import driver_controller
 
-print(driver_controller.MacCmd().Clicker().press(button='a')
+driver_controller.MacCmd().Clicker().press(key='a')
+driver_controller.MacCmd().Clicker().write(text='hello')
 ``` 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png)      
 # Set brightness of screen.
