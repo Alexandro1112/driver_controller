@@ -105,7 +105,7 @@ driver_controller.MacCmd().Notifier().send_lateral_message(label='<YOUR_LABEL>',
 ``` 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png)     
-# Click on buttons? It is possiable.May be even wirte word.
+# is it possible to automotize keystrokes?Yes, you can even write the word.
 
 ``` 
 import driver_controller
