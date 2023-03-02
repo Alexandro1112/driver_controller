@@ -11,7 +11,7 @@ In the github repository local submodules, install them - not need.However code 
 > git clone https://github.com/Alexandro1112/driver_controller
 
     
-<h3>After, import them. Explore main abillity this library. <h3>
+<h3>After, import them. Explore main opportunities this library. <h3>
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
 
