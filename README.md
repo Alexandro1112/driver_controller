@@ -2,6 +2,8 @@
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+[![Platforms macOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
+[![Platforms LinuxOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
 <p><strong>DRIVER_CONTROLLER<strong><p>
 
 This lib will help you change system settings such as brightness, volume, color- mode, control your mouse,send notification,open windows, outputing available gadgets , connecting to wifi-network, enable/disable bluetooth device.You can use this utility for your python project.
