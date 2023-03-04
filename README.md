@@ -2,6 +2,10 @@
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+<img src='https://shields.io/badge/-Tested:%20Windows%2010-silver'>
+<img src='https://shields.io/badge/-Tested:%20Mac%20os%20Big Sur(+)11.7.4-green'>
+<img src='https://shields.io/badge/-Tested:%20Mac%20os%20Catalina(+)10.15.7-green'><br>
+<img src='https://shields.io/badge/-Tested:%20Mac%20os%20High Siera(+)10.13-green'>
 [![Platforms WindowsOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
 [![Platforms MacOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
 [![Platforms LinuxOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
