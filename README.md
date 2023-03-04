@@ -1,14 +1,16 @@
 <img style="display: block; align-items: center; justify-content: center; width: 365px; height: 355px;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
 
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
-<img src='https://shields.io/badge/-Tested:%20Windows%2010-silver'>
+![#c5f015](https://placehold.co/15x20/c5f015/c5f015.png)<br>
+<img src='https://shields.io/badge/-Tested:%20Windows%2010-green'>
 <img src='https://shields.io/badge/-Tested:%20Mac%20os%20Big Sur(+)11.7.4-green'>
 <img src='https://shields.io/badge/-Tested:%20Mac%20os%20Catalina(+)10.15.7-green'><br>
 <img src='https://shields.io/badge/-Tested:%20Mac%20os%20High Siera(+)10.13-green'>
-[![Platforms WindowsOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
-[![Platforms MacOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
-[![Platforms LinuxOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
+<img src='https://shields.io/badge/-LinuxOS:%20no%20tested-darkred'>
+[![Platforms WindowsOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](https://www.microsoft.com/en-us/windows)
+[![Platforms MacOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)<br>
+[![Platforms LinuxOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](https://www.linux.org/pages/download/)
+<img src='https://shields.io/badge/-MIT%20Lisence-gold'>
 <p><strong>DRIVER_CONTROLLER<strong><p>
 
 This lib will help you change system settings such as brightness, volume, color- mode, control your mouse,send notification,open windows, outputing available gadgets , connecting to wifi-network, enable/disable bluetooth device.You can use this utility for your python project.
