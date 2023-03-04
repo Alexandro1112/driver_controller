@@ -2,7 +2,8 @@
 
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
-[![Platforms macOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
+[![Platforms WindowsOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
+[![Platforms MacOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
 [![Platforms LinuxOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)
 <p><strong>DRIVER_CONTROLLER<strong><p>
 
