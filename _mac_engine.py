@@ -12,7 +12,7 @@
 # I COMMAND - [ pip3 install loger ]
 # II COMMAND = [ pip3 install plyer ]
 # III COMMAND = [ pip3 install sounddevice ]
-# IIII COMMAND = [ pip3 install pyobjc ]
+# IIII COMMAND = [ pip3 install -U pyobjc ]
 # If code not working, though git submodules
 # exist in git-hub repository: complete few commands:
 # INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
@@ -142,9 +142,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          wifi.append(str(r).split('>')[i].split(',')[0] + ']')
 
                     for items in wifi:
-                         wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']', '').replace('=', '').strip())
-
-
+                         wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']', '').replace('=',
+                                                                                                                  '').strip())
 
                     yield set(sorted(wifi2))
 
@@ -185,7 +184,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     return self.devises
 
-
           class Wifi(object):
                """Connect to wi-fi networks/ Data about wifi."""
 
@@ -198,7 +196,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     ul = 0.00
                     dl = 0.00
                     t0 = time()
-                    upload = psutil.net_io_counters(pernic=True)["lo0"][0]
+                    upload = psutil.net_io_counters(pernic=True)['lo0'][0]
                     download = psutil.net_io_counters(pernic=True)["lo0"][1]
                     up_down = (upload, download)
 
@@ -218,8 +216,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               pass
                          if dl > 0.1 or ul >= 0.1:
                               sleep(0.75)
-
-
+                         break
                @staticmethod
                def connectTo(wifi_network, password):
                     """
@@ -256,6 +253,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def WifiBssid(self):
                     ps = subprocess.getoutput(cmd='airport -I | grep BSSID').strip(' ')
                     return ps
+
                def InfoNetwork(self):
                     """Ruturn a lot of data about current wifi network"""
                     return str(self.interface.ipMonitor()).strip().split('>')[1]
@@ -270,10 +268,12 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     return self.interface.aggregateRSSI()
 
                def _get_speed_by_current_network(self):  # Deleted method.
-                   raise NotImplementedError(f'{repr(self._get_speed_by_current_network.__name__)} Deleted method. Because it already not support.')
+                    raise NotImplementedError(
+                         f'{repr(self._get_speed_by_current_network.__name__)} Deleted method. Because it already not support.')
 
                def Get_maxSpeed(self):
                     return subprocess.getoutput(cmd='airport -I | grep maxRate').strip()
+
                def get_last_speed_by_current_network(self):
                     return self.last_speed.strip().split(':')[-1]
 
@@ -281,8 +281,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     return not subprocess.getoutput(cmd='airport -I | grep SSID').split(':')[-1].strip() == ''
 
                def GetDownLoadSpeed(self):
-                    return  self.dl
-
+                    return self.dl
 
                def isUsedProxy(self):
                     """
@@ -298,7 +297,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def SecurityType(self):
                     """Return security type of current wi-fi network"""
                     return self.secT.split(':')[-1]
-
 
           class Switching(object):
                """Switch wi-fi/bluetooth"""
@@ -348,7 +346,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                                              '(menu bar item 1 of menu bar 1 whose description '
                                              'is "bluetooth") to {click, click (menu item 2 of menu 1)}\'')
                     return 'Successful...'
-
 
           class Brightness(object):
                """Set brightness"""
@@ -428,7 +425,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Get brightness percent"""
                     return round(float(self.get_cur_brightness_per.split(' ')[-1]), ndigits=1)
 
-
           class SystemConfig(object):
                """Data about mac"""
 
@@ -437,7 +433,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
                     self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
                     self.size = \
-                         subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[
+                         subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(
+                              ":")[
                               1].split(' ')
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
@@ -513,11 +510,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Return vide card name"""
                     return self.video_crd_nm.strip().split(':')[-1]
 
-               @property
-               def sensor_temperature(self):
-                    return str(round(int(self.temp.split('\n')[-1].split(':')[-1]) / 2.64690312335)) + str(
-                         '˚C')  # fahrenheit -> gradus
 
+               def sensor_temperature(self):
+
+                   return round(int(self.temp.split('\n')[0].split(':')[-1]))
 
           class VoiceOver(object):
                """Voiceover text"""
@@ -542,7 +538,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          else:
                               subprocess.getoutput(cmd=f'say -v {voice} -i {text}')
 
-
           class PasswordManager(object):
                """Paasword-manager"""
 
@@ -566,7 +561,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          return password.strip()
                     else:
                          raise WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)}')
-
 
           class Notifier(object):
                """Send different alerts"""
@@ -650,7 +644,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          """ % (entr_text, title, button1, button2)
                     return subprocess.getoutput(cmd=cmd)
 
-
           class Creator(object):
                """Create something."""
 
@@ -677,7 +670,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     else:
                          subprocess.getoutput(cmd=f'mkdir {name}')
 
-
           class ScreenCapture(object):
                """Make screenshot/video with settings"""
 
@@ -696,7 +688,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  (Available only on Mac-os)
                  """
 
-                    if extension in [i for i in self.AVAILABLE_EXTENSIONS]:
+                    if extension in (i for i in self.AVAILABLE_EXTENSIONS):
 
                          sleep(pause if pause is not None else 0.0)
                          subprocess.getoutput(cmd=f'screencapture {filename}.{extension}')
@@ -736,8 +728,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                @property
                def available_extension(self):
-                    return ( self.AVAILABLE_EXTENSIONS )
-
+                    return (self.AVAILABLE_EXTENSIONS)
 
           class PhotoCapture(object):
 
@@ -752,7 +743,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     subprocess.getoutput(
                          cmd=f'/opt/local/bin/ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
                     return 'Check file is %s.%s' % (filename, extension)
-
 
           class AudioRecorder(object):
                """Audio recorder"""
@@ -774,7 +764,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  """
                     if extension in self.AVAILABLE_EXTENSIONS:
                          if os.path.isfile(f'{filename}.{extension}'):
-                              raise FileExistsError(f'Please, rename file {filename}.{extension},because him already exist.')
+                              raise FileExistsError(
+                                   f'Please, rename file {filename}.{extension},because him already exist.')
                          else:
 
                               print('recording...')
@@ -789,7 +780,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     else:
                          raise UnsupportedFormat('Method can make files only with extensions (\'wav', 'mp3\')')
-
 
           class AppSystem(object):
                def __init__(self):
@@ -815,17 +805,23 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  """
                     subprocess.getoutput(cmd=f'pkill {application_name}')
                     return 'Successful...'
+               @property
+               def current_opened_app(self):
+                    activeAppName = AppKit.NSWorkspace.sharedWorkspace().activeApplication()['NSApplicationName']
+                    return activeAppName
+
 
 
           class Clicker(object):
                """Click keys"""
+
                def press(self, key):
                     key.join('')
                     try:
                          key = KeyHexType[key]
                     except KeyError:
-                         raise ValueError(f'Method {repr(self.press.__name__)} support only 1 letter. Use {repr(self.write.__name__)}.')
-
+                         raise ValueError(
+                              f'Method {repr(self.press.__name__)} support only 1 letter. Use {repr(self.write.__name__)}.')
 
                     ev = AppKit.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                          14,
@@ -843,13 +839,11 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     event = Quartz.CGEventCreateKeyboardEvent(None, key, True)
                     Quartz.CGEventSetFlags(event, 0)
                     Quartz.CGEventPost(Quartz.kCGHIDEventTap, event)
+
                def write(self, text):
 
                     for i in text:
                          self.press(key=i)
-
-
-
 
           class Open(object):
                @staticmethod
@@ -884,7 +878,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def open_spotlight(self):
                     """Open spotlight menu."""
                     MacCmd().Mouse().move_click(1212, 13)
-
 
           class Sound(object):
                """
@@ -1001,10 +994,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                          sleep(float(self.duration_Start.duration()))
 
-                    except AttributeError as e:
+                    except AttributeError:
 
-                         raise PathError() from e
-
+                         raise PathError(f'No sound name {soundfile}, or it not support')
 
           class AppConfigure(object):
                """App-settings"""
@@ -1029,7 +1021,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          raise ApplicationNameError
                     else:
                          return subprocess.getoutput(cmd=path).split()[0]
-
 
           class FileConfig(object):
 
@@ -1062,6 +1053,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Return all files in folder"""
                     if not os.path.exists(path=path):
                          raise FileExistsError
+                    if path == subprocess.getoutput(cmd=f'ls {path}'):
+                         return None
                     return subprocess.getoutput(cmd=f'ls {path}')
 
                def get_folder_size(self, path):
@@ -1070,8 +1063,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                          return subprocess.getoutput(cmd=f'du -sh {path}').split()
                     else:
-                         raise FileExistsError
-
+                         raise FileExistsError(f'No file name {path}')
 
           class Volume(object):
                def __init__(self):
@@ -1085,7 +1077,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          3].replace(',', '')
                     self.output_volume = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[
                          1].replace(',', '')
-                    self.alert_vol = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[5].replace(
+                    self.alert_vol = subprocess.getoutput(cmd='osascript -e \'get volume settings\'').split(' ')[
+                         5].replace(
                          ',', '')
 
                def set_volume(self, volume):
@@ -1170,7 +1163,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     doKey(True)
                     doKey(False)
 
-
           class WebCameraCapture(object):
                """Collect data in camera"""
 
@@ -1204,7 +1196,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """
 
                     return '[' + str(self.devises.strip().split('[', maxsplit=1)[-1].split(': ')[0])
-
 
           class Mouse(object):
                """Mouse events"""
@@ -1258,7 +1249,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Return mouse position"""
                     return self.x, self.y
 
-
           class Theme:
                def __init__(self):
                     self.cmd = 'osascript -e \'tell app "System Events" to tell appearance ' \
@@ -1267,7 +1257,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def change_color_mode(self, pause: [int, float, complex]):
                     sleep(pause)
                     subprocess.getoutput(cmd=self.cmd)
-
 
           class Copy:
                def copyText(self, text):
@@ -1279,16 +1268,13 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     newStrIng = AppKit.NSString.stringWithString_(text)
                     newData = newStrIng.nsstring().dataUsingEncoding_(AppKit.NSUTF8StringEncoding)
                     pb.setData_forType_(newData, init)
-                   
+
           class Illumination:
-            """Change Illumination for keys"""
                def increase_illumination(self):
                     def doKey(down):
-
                          NSSystemDefined = 14
 
                          DECODE_TO_INT_KEY_F6 = 21
-
 
                          ev = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,  # type
@@ -1298,7 +1284,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               0,  # window
                               0,  # ctx
                               8,  # subtype
-                              (DECODE_TO_INT_KEY_F6  << 16) | ((0xa if down else 0xb) << 8),  # data1
+                              (DECODE_TO_INT_KEY_F6 << 16) | ((0xa if down else 0xb) << 8),  # data1
                               -1  # data2
                          )
                          cev = ev.CGEvent()
@@ -1313,7 +1299,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          NSSystemDefined = 14
 
                          DECODE_TO_INT_KEY_F5 = 22
-
 
                          ev = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,  # type
