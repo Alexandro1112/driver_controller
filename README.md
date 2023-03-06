@@ -15,7 +15,7 @@
 
 This lib will help you change system settings such as brightness, volume, color- mode, control your mouse,send notification,open windows, outputing available gadgets , connecting to wifi-network, enable/disable bluetooth device.You can use this utility for your python project.
 In the github repository local submodules, install them - not need.However code not working - install them, run script
-> install_deepindensies.sh
+> install_depindensies.sh
 # Installation
 > git clone https://github.com/Alexandro1112/driver_controller
 
