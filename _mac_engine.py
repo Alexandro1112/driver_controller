@@ -18,7 +18,7 @@
 # INSTALL || /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" OR
 # REINSTALL (if need)|| /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # LIB - INSTALLER || brew install brightness || brew doctor || brew install blueutil ||
-# brew install ffmpeg OR sudo port install ffmpeg || if "command port not founded: then:
+# 'brew install ffmpeg' OR 'sudo port install ffmpeg' || if "command port not founded: then:
 #                                               ||PORT-INSTALLATION ||
 # I COMMAND - [export PATH=/opt/local/bin:/opt/local/sbin:$PATH]
 # II COMMAND - [export DISPLAY=:0.0]
@@ -42,6 +42,7 @@
 
 import psutil
 
+import mutagen.mp3
 # Os
 import os
 
@@ -103,8 +104,10 @@ try:
 
      # Unplug warnings, unexpected errors
      from shutup import please
+
+     from PIL import Image
 except:
-     assert 'Installing Quartz, psutil, loger, pyobjc, AppKit, sounddevice'
+     assert 'Installing Quartz, psutil, loger, pyobjc, AppKit, sounddevice pillow'
 
 __all__ = ['MacCmd', 'CONSTANTS']
 
@@ -193,30 +196,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
                     self.last_speed = subprocess.getoutput(cmd='airport -I | grep lastTxRate')
                     self.secT = subprocess.getoutput(cmd='airport -I | grep "link auth"')
-                    ul = 0.00
-                    dl = 0.00
-                    t0 = time()
-                    upload = psutil.net_io_counters(pernic=True)['lo0'][0]
-                    download = psutil.net_io_counters(pernic=True)["lo0"][1]
-                    up_down = (upload, download)
-
-                    while True:
-                         last_up_down = up_down
-                         upload = psutil.net_io_counters(pernic=True)["lo0"][0]
-                         download = psutil.net_io_counters(pernic=True)["lo0"][1]
-                         t1 = time()
-                         up_down = (upload, download)
-                         try:
-                              ul, self.dl = [
-                                   (now - last) / (t1 - t0) / 1024 ** 2
-                                   for now, last in zip(up_down, last_up_down)
-                              ]
-                              t0 = time()
-                         except:
-                              pass
-                         if dl > 0.1 or ul >= 0.1:
-                              sleep(0.75)
-                         break
+                    
                @staticmethod
                def connectTo(wifi_network, password):
                     """
@@ -280,8 +260,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def IsEnable(self):
                     return not subprocess.getoutput(cmd='airport -I | grep SSID').split(':')[-1].strip() == ''
 
-               def GetDownLoadSpeed(self):
-                    return self.dl
 
                def isUsedProxy(self):
                     """
@@ -805,10 +783,20 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  """
                     subprocess.getoutput(cmd=f'pkill {application_name}')
                     return 'Successful...'
-               @property
-               def current_opened_app(self):
+              
+               def current_opened_app(self, pause):
+                    sleep(pause)
                     activeAppName = AppKit.NSWorkspace.sharedWorkspace().activeApplication()['NSApplicationName']
                     return activeAppName
+
+               def isopened(self, application_name):
+                   """Returns a boolean value depending on whether the application is open."""
+                   return AppKit.NSWorkspace.sharedWorkspace().openFile_withApplication_andDeactivate_(None, f'{application_name}', None)
+
+               def get_size_icon_by_app(self, application_name):
+                    activeAppName = AppKit.NSWorkspace.sharedWorkspace().iconForFile_(f'/Applications/{application_name}')
+                    size = str(activeAppName).split(' ')[2] + str(activeAppName).split(' ')[3]
+                    return size
 
 
 
@@ -846,8 +834,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          self.press(key=i)
 
           class Open(object):
-               @staticmethod
-               def application(path_app):
+
+               def application(self, application_name):
                     """
                  Open application by his name.
                  :param path_app: Path to Application
@@ -855,15 +843,14 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  EXAMPLE [/Applications/Finder.app]
                  :return: Successful if successful opened app.
                  """
-                    cmd = subprocess.getoutput(cmd=f'open -F -a "{path_app}"')
-                    if cmd.strip() != '':
-                         raise ApplicationNotExist('Application %s not exist' % path_app)
+                    boolean = AppKit.NSWorkspace.sharedWorkspace().launchApplication_(
+                         application_name
+                    )
+                    if not boolean:
+                         raise ApplicationNotExist(f'Application {application_name} not exist.')
 
-                    else:
-                         return 'Successful...'
 
-               @staticmethod
-               def url(url, browser):
+               def url(self, url, browser):
                     """
                     Open url in main browser
                     DEFAULT BROWSER: Safari.
@@ -878,6 +865,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def open_spotlight(self):
                     """Open spotlight menu."""
                     MacCmd().Mouse().move_click(1212, 13)
+
+               def open_file(self, path):
+                    AppKit.NSWorkspace.sharedWorkspace().openFile_(
+                         path)
 
           class Sound(object):
                """
@@ -995,8 +986,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          sleep(float(self.duration_Start.duration()))
 
                     except AttributeError:
-
                          raise PathError(f'No sound name {soundfile}, or it not support')
+
+               def sound_length(self, file):
+                    return mutagen.mp3.MP3(file).info.length
 
           class AppConfigure(object):
                """App-settings"""
@@ -1005,7 +998,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     if subprocess.getstatusoutput(
                             cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[
                          0] == 1:
-                         raise ApplicationNotExist
+                         raise ApplicationNotExist('No applications name "{app}"')
                     else:
                          return subprocess.getoutput(
                               cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
@@ -1316,13 +1309,70 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     doKey(True)
                     doKey(False)
+          class BackGroundScreen:
+
+               def set_backgroud(self, filename: str, image_bg_color='white'):
+                    try:
+                         Image.open(filename)
+                    except Exception:
+                        raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
+                    if image_bg_color == 'green':
+                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         config = {
+                              AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.greenColor()
+                         }
+                    elif image_bg_color == 'red':
+                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         config = {
+                              AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.redColor()
+                         }
+                    elif image_bg_color == 'blue':
+                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         config = {
+                              AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blueColor()
+                         }
+                    elif image_bg_color == 'yellow':
+                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         config = {
+                              AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.yellowColor()
+                         }
+                    elif image_bg_color == 'white':
+                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         config = {
+                              AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.whiteColor()
+                         }
+                    elif image_bg_color == 'black':
+                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         config = {
+                              AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blackColor()
+                         }
+                    elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
+                        raise RgbValueError(f'No color {image_bg_color} for background.')
+
+                    ws = AppKit.NSWorkspace.sharedWorkspace()
+                    for screen in AppKit.NSScreen.screens():
+                         ws.setDesktopImageURL_forScreen_options_error_(
+                              file_url, screen, config, None)
+
 
 else:
-     raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
+    raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
 if __name__ == '__main__':
      try:
-          exit(0)
+          exit()
      except KeyboardInterrupt:
           pass
 
