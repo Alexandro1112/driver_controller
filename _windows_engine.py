@@ -22,6 +22,12 @@ if sys.platform.lower() == 'win32':
                 else:
                     password = subprocess.getoutput(cmd=f'netsh wlan show profile name={name_wifi_network} key=clear')
                     return password.strip()
+       class Brightness:
+           def set_brightness(self, brighrness):
+                if type(brightness) != int or type(brightness) != float:
+                    raise ValueBirghtnessError('Brightness must be type:', int, float)
+                cmd = 'powershell (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,%s)'
+                subprocces.getoutput(cmd=cmd)
 else:
     raise OSError( "" )
 
