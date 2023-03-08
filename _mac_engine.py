@@ -64,6 +64,7 @@ from time import (sleep, ctime, time)
 # Parse xml
 from xml.etree import ElementTree
 
+
 # Constants
 from .CONSTANTS import (SOUNDS_GLASS_SOUND,
                         SOUNDS_BLOW_SOUND,
@@ -95,7 +96,7 @@ try:
      from sounddevice import query_devices
      # Screen size
      import AppKit
-
+     # Objective-c classes for Core-Wlan
      import CoreWLAN
 
      # For collecting data in system files
@@ -115,6 +116,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
         int(sys.version.split(' | ')[0].split('.')[0]) >= 3 and \
         int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 until 10.8 not support.
      class MacCmd:
+          """Class with subclasees."""
 
           class OutputListsDevises(object):
                """ Return output devises """
@@ -196,7 +198,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
                     self.last_speed = subprocess.getoutput(cmd='airport -I | grep lastTxRate')
                     self.secT = subprocess.getoutput(cmd='airport -I | grep "link auth"')
-                    
+
                @staticmethod
                def connectTo(wifi_network, password):
                     """
@@ -260,10 +262,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def IsEnable(self):
                     return not subprocess.getoutput(cmd='airport -I | grep SSID').split(':')[-1].strip() == ''
 
-
                def isUsedProxy(self):
                     """
-
                     :return: [False] if proxy/VPN not used, [True] is Using.
                     """
                     return self.interface.isProxy()
@@ -457,7 +457,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """
                    Screen size of your mac-book.
                    :return: screen size
-
                    """
 
                     return self.size
@@ -488,10 +487,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Return vide card name"""
                     return self.video_crd_nm.strip().split(':')[-1]
 
-
                def sensor_temperature(self):
-
-                   return round(int(self.temp.split('\n')[0].split(':')[-1]))
+                    return round(int(self.temp.split('\n')[0].split(':')[-1]))
 
           class VoiceOver(object):
                """Voiceover text"""
@@ -505,7 +502,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  :example: say -v ALex -i Hi! I am alex
                  :return: voice with point outed text
                  ALL AVAILABLE Voices(probably few unavailable on your devises)
-
                  """
 
                     if text is None:
@@ -525,8 +521,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  Function return password
                  of saved wi-fi network
                  trough util "keychain".
-                 (Must be Administrator for run this code)
-                 (Available only on Mac-os)
+                 (Must be Administrator for run this code.
                  :param name_wifi_network: Name
                  :return: password of network which saved in KEY CHAINS.
                   """
@@ -538,7 +533,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                                  0] == 0:
                          return password.strip()
                     else:
-                         raise WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)}')
+                         raise WifiValueError(f'Can not find wifi-network 
+                                              {repr(name_wifi_network)} in key chains.')
 
           class Notifier(object):
                """Send different alerts"""
@@ -578,7 +574,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                   if you don't want used icon
                   :param activate: application, which open when you click by notify.
                   :return: Successful.
-
                   """
                     if activate in (i.name() for i in process_iter()) or activate is None:
                          pass
@@ -733,7 +728,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def recorder(self, microphone_index, extension, filename: str, record_time: int):
                     """
-
                  :param microphone_index: Microphone index
                  :param extension: Extension of creates file
                  :param filename: Name
@@ -779,31 +773,32 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  Name of App which will
                  be close.
                  :return: [None]
-
                  """
                     subprocess.getoutput(cmd=f'pkill {application_name}')
                     return 'Successful...'
-              
+
                def current_opened_app(self, pause):
                     sleep(pause)
                     activeAppName = AppKit.NSWorkspace.sharedWorkspace().activeApplication()['NSApplicationName']
                     return activeAppName
 
                def isopened(self, application_name):
-                   """Returns a boolean value depending on whether the application is open."""
-                   return AppKit.NSWorkspace.sharedWorkspace().openFile_withApplication_andDeactivate_(None, f'{application_name}', None)
+                    """Returns a boolean value depending on whether the application is open."""
+                    return AppKit.NSWorkspace.sharedWorkspace().openFile_withApplication_andDeactivate_(None,
+                                                                                                        f'{application_name}',
+                                                                                                        None)
 
                def get_size_icon_by_app(self, application_name):
-                    activeAppName = AppKit.NSWorkspace.sharedWorkspace().iconForFile_(f'/Applications/{application_name}')
+                    activeAppName = AppKit.NSWorkspace.sharedWorkspace().iconForFile_(
+                         f'/Applications/{application_name}')
                     size = str(activeAppName).split(' ')[2] + str(activeAppName).split(' ')[3]
                     return size
-
-
 
           class Clicker(object):
                """Click keys"""
 
                def press(self, key):
+                    """Press key via >>> AppKit"""
                     key.join('')
                     try:
                          key = KeyHexType[key]
@@ -829,6 +824,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     Quartz.CGEventPost(Quartz.kCGHIDEventTap, event)
 
                def write(self, text):
+                    """Write text"""
 
                     for i in text:
                          self.press(key=i)
@@ -849,8 +845,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     if not boolean:
                          raise ApplicationNotExist(f'Application {application_name} not exist.')
 
-
-               def url(self, url, browser):
+               def url(self, url, browser='Safari'):
                     """
                     Open url in main browser
                     DEFAULT BROWSER: Safari.
@@ -866,9 +861,17 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Open spotlight menu."""
                     MacCmd().Mouse().move_click(1212, 13)
 
+
                def open_file(self, path):
                     AppKit.NSWorkspace.sharedWorkspace().openFile_(
                          path)
+
+               def open_file_in_app(self, app_name, file):
+                    open_objc = AppKit.NSWorkspace.sharedWorkspace().openFile_withApplication_(file, app_name)
+                    
+
+                    if open_objc is False:
+                         raise OpenPossibilityError(f'Can not open file {file}, because application {app_name} not support format this files.')
 
           class Sound(object):
                """
@@ -995,13 +998,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                """App-settings"""
 
                def get_full_path_by_app_name(self, app):
-                    if subprocess.getstatusoutput(
-                            cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")[
-                         0] == 1:
-                         raise ApplicationNotExist('No applications name "{app}"')
-                    else:
-                         return subprocess.getoutput(
-                              cmd=f"osascript -e 'tell application \"System Events\" to POSIX path of (file of process \"{app}\" as alias)'")
+                    return AppKit.NSWorkspace.sharedWorkspace().fullPathForApplication_(app)
 
                def get_app_size(self, app_name):
                     """
@@ -1075,6 +1072,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          ',', '')
 
                def set_volume(self, volume):
+                    """Set volume by value."""
 
                     subprocess.getoutput(cmd=self.volume % volume)
                     if subprocess.getstatusoutput(cmd=self.volume % volume)[0] == 1:
@@ -1309,13 +1307,16 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     doKey(True)
                     doKey(False)
+
           class BackGroundScreen:
 
                def set_backgroud(self, filename: str, image_bg_color='white'):
                     try:
                          Image.open(filename)
                     except Exception:
-                        raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
+                         raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
+                                              
+                                              
                     if image_bg_color == 'green':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1323,6 +1324,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.greenColor()
                          }
+                                              
                     elif image_bg_color == 'red':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1330,6 +1332,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.redColor()
                          }
+                                              
                     elif image_bg_color == 'blue':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1337,6 +1340,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blueColor()
                          }
+                                              
                     elif image_bg_color == 'yellow':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1351,6 +1355,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.whiteColor()
                          }
+                                              
                     elif image_bg_color == 'black':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1358,22 +1363,18 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blackColor()
                          }
+                                              
                     elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
-                        raise RgbValueError(f'No color {image_bg_color} for background.')
+                         raise RgbValueError(f'No color {image_bg_color} for background.')
 
                     ws = AppKit.NSWorkspace.sharedWorkspace()
                     for screen in AppKit.NSScreen.screens():
                          ws.setDesktopImageURL_forScreen_options_error_(
-                              file_url, screen, config, None)
+                              file_url, screen, config, None)# Set img for bg
 
 
 else:
-    raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
+     raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
 if __name__ == '__main__':
-     try:
-          exit()
-     except KeyboardInterrupt:
-          pass
-
-
+    exit('Welcome to driver_controller!')
