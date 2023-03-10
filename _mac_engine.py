@@ -75,6 +75,7 @@ from .exceptions import *
 import _sysconfigdata_x86_64_apple_darwin13_4_0 as dar
 
 try:
+     import CoreLocation
 
      import pyperclip
 
@@ -230,11 +231,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     network = networks.anyObject()
 
-                    success, error = iface.associateToNetwork_password_error_(network, password, None)
+                    success_connect, error = iface.associateToNetwork_password_error_(network, password, None)
                     if error:
                          raise WifiNameConnectError(f'Can not connect to wifi network name "{wifi_network}"')
-                        
-                        
                def Disconnect(self):
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi off')
 
@@ -242,7 +241,8 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi on')
 
                def connectToMacAddress(self):
-                    """Connect to wi-fi which used your devise."""
+                    """Connect to wi-fi which used your Mac.
+                    (Actually connect to Your Mac address."""
                     self.interface.startHostAPMode_(None)
 
                def WifiNetworkNoise(self):
@@ -260,14 +260,14 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def ChannelGhz(self):
                     """Ghz type channel.It is 2Ghz or 5Ghz."""
                     if str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip() == 'None':
-                         raise ConnectionRefusedError('Enable wi-fi, please.')
+                         raise ConnectionRefusedError('Enable wi-fi, please.').with_traceback()
                     return str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip()
 
                def RssiChannelValue(self):
                     return self.interface.aggregateRSSI()
 
                def _get_speed_by_current_network(self):  # Deleted method.
-                    raise NotImplementedError(
+                   raise NotImplementedError(
                          f'{repr(self._get_speed_by_current_network.__name__)} '
                          f'Deleted method. Because it already not support.')
 
@@ -293,6 +293,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def SecurityType(self):
                     """Return security type of current wi-fi network"""
                     return self.secT.split(':')[-1]
+
+               def get_info(self, ssid):
+                    return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid,
+                    None)).split('[')[1].split(', ')[:4]
 
          class Switching(object):
                """Switch wi-fi/bluetooth"""
@@ -425,13 +429,11 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                """Data about mac"""
 
                def __init__(self):
+
                     self.percent = list(IOPSCopyPowerSourcesByType(0))[0]['Current Capacity'] # ignore: noqa
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
                     self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
-                    self.size = \
-                         subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(
-                              ":")[
-                              1].split(' ')
+                    self.size =  subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
@@ -443,6 +445,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          cmd='sysctl machdep.xcpm.cpu_thermal_level sysctl machdep.xcpm.gpu_thermal_level')
 
                     self.name = Foundation.NSUserName()
+
+
+
 
                @property
                def devise_battery(self):
@@ -509,12 +514,25 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def sensor_temperature(self):
                     return round(int(self.temp.split('\n')[0].split(':')[-1]))
-
+               @property
                def mac_name(self):
                     return self.name
-
+               @property
                def darwin_version(self):
                     return dar.build_time_vars['BUILD_GNU_TYPE']
+
+               def mac_location(self):
+
+                    manager = CoreLocation.CLLocationManager.alloc().init()
+                    manager.delegate()
+                    manager.startUpdatingLocation()
+                    while CoreLocation.CLLocationManager.authorizationStatus() != 3 or manager.location() is None:
+                         sleep(.1)
+                    coord = manager.location().coordinate()
+                    lat, lon = coord.latitude, coord.longitude
+                    return (lat, lon)
+
+
 
          class VoiceOver(object):
                """Voiceover text"""
@@ -709,7 +727,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     Return all available devises for recording audio/video.
                     :return:
                     """
-                    
                     devises = '[' + str(subprocess.getoutput(
                          cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[
                                              -1])
@@ -815,7 +832,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def press(self, key):
                     """Press key via >>> AppKit"""
-                    key.join('')
                     try:
                          key = KeyHexType[key]
                     except KeyError:
@@ -841,7 +857,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def write(self, text):
                     """Write text"""
-
                     for i in text:
                          self.press(key=i)
 
@@ -1297,7 +1312,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               (DECODE_TO_INT_KEY_F6 << 16) | ((0xa if down else 0xb) << 8),  # data1
                               -1  # data2
                          )
-
                          cev = ev.CGEvent()
                          Quartz.CGEventPost(0, cev)
 
@@ -1377,7 +1391,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blackColor()
                          }
-                          
                     elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
                          raise RgbValueError(f'No color {image_bg_color} for background.')
 
@@ -1387,7 +1400,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               file_url, screen, config, None)
 
 
-                        
 else:
      raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
