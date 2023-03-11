@@ -208,7 +208,7 @@ MacCmd().WebCameraCapture.webcam_capture(record_time=20, camera_index=0, filenam
 ```
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
-Play sounds, available in mac-os
+# Play sounds, available in mac-os
 ```
 from driver_controller import MacCmd
 
@@ -305,11 +305,34 @@ d = driver_controller._mac_engine.MacCmd().FileConfig().get_date_create_file('/A
 path = driver_controller._mac_engine.MacCmd().AppConfigure().get_full_path_by_app_name('Safari')
 print(size, ',', path, ',', d)
 # 295M , /Applications/Safari.app , Thu Dec  5 22:30:38 2019
-
-
 ```
 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+# Just setup illumination.
+
+```
+import driver_controller as dr
+
+for i in range(10):
+    dr.MacCmd().Illumination().increase_illumination()
+    # Increase illumination from keys.
+for i in range(3):
+    dr.MacCmd().Illumination().decrease_illumination()
+    # Decrease illumination from keys.
+```
+
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+# Working with buffer.
+
+```
+import driver_controller as dr
+
+print(dr.MacCmd().Buffer().paste())
+dr.MacCmd().Buffer().copyText('Copied text!')
+# Command+C -> Copied text!
+```
+
+
 
 <h1> That was main methods this python library. Exist even linux version. windows, while there less possibilities.<h1>
 
