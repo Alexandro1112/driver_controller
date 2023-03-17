@@ -4,7 +4,12 @@ __all__ = [
      'SOUNDS_FUNK_SOUND',
      'SOUNDS_POP_SOUND',
      'SOUNDS_BLOW_SOUND',
-     'SOUNDS_GLASS_SOUND'
+     'SOUNDS_GLASS_SOUND', 
+        'BLUE_COLOR', 
+        'RED_COLOR',
+        'GREEN_COLOR', 
+        'BLACK_COLOR', 
+        'YELLOW_COLOR'
 ]
 
 
@@ -25,6 +30,7 @@ SOUNDS_PING_SOUND = 'Ping'
 
 
 SOUNDS_BLOW_SOUND = 'Blow'
+
 
 """Taken from Pyautogui Documentation"""
 
@@ -166,4 +172,14 @@ KeyHexType = {
     'kana': 0x68, # kVK_JIS_Kana
 }
 
-# END
+RED_COLOR = 'red'
+
+GREEN_COLOR = 'green'
+
+YELLOW_COLOR = 'yellow'
+
+BLUE_COLOR = 'blue'
+
+BLACK_COLOR = 'black'
+
+# END FILE
