@@ -1,3 +1,4 @@
+
 # /opt/anaconda3/bin/python
 # Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.
 # The library is designed for Mac-OS, performs technical
@@ -56,27 +57,33 @@ import subprocess
 import sys
 
 # Unplug warnings, unexpected errors
-from warnings import filterwarnings
+from unittest.mock import Mock
 
 # pause for methods
 from time import (sleep, ctime, time)
+
+import typing
 
 # Parse xml
 from xml.etree import ElementTree
 
 # Constants
-from .CONSTANTS import KeyHexType
+from .CONSTANTS import KeyHexType, RED_COLOR, GREEN_COLOR, YELLOW_COLOR, BLUE_COLOR, BLACK_COLOR
 # Platform
 import platform
 
 # Exceptions for methods
 from .exceptions import *
-
-import _sysconfigdata_x86_64_apple_darwin13_4_0 as dar
+try:
+     # Any mac-os not support this config-file.
+     import _sysconfigdata__darwin_darwin as dar
+except:
+     dar = None
 
 try:
      import CoreLocation
 
+     import SystemConfiguration
      import pyperclip
 
      # Mouse-click
@@ -111,26 +118,24 @@ except:
 
 __all__ = ['MacCmd', 'CONSTANTS']
 
-
 IOKit = Foundation.NSBundle.bundleWithIdentifier_('com.apple.framework.IOKit')
 
 functions = [("IOServiceGetMatchingService", b"II@"),
-             ("IOServiceMatching", b"@*"),
-             ("IORegistryEntryCreateCFProperties", b"IIo^@@I"),
-             ("IOPSCopyPowerSourcesByType", b"@I"),
-             ("IOPSCopyPowerSourcesInfo", b"@"),
-            ]
-
+   ("IOServiceMatching", b"@*"),
+   ("IORegistryEntryCreateCFProperties", b"IIo^@@I"),
+("IOPSCopyPowerSourcesByType", b"@I"),
+   ("IOPSCopyPowerSourcesInfo", b"@"),
+   ]
 
 __init__ = objc._objc.loadBundleFunctions(IOKit, globals(), functions)
 
 if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and \
-        int(sys.version.split(' | ')[0].split('.')[0]) >= 3 and \
-        int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 until 10.8 not support.
+int(sys.version.split(' | ')[0].split('.')[0]) >= 3 and \
+int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 until 10.8 not support.
      class MacCmd:
-         """Class with subclasees."""
+          """Class with subclasees."""
 
-         class OutputListsDevises(object):
+          class OutputListsDevises(object):
                """ Return output devises """
 
                def __init__(self):
@@ -147,6 +152,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     wifi = []
                     wifi2 = []
+
                     bundle_path = '/System/Library/Frameworks/CoreWLAN.framework'
 
                     dir(objc._objc.loadBundle(infoForFramework(bundle_path)[1], bundle_path=bundle_path,
@@ -157,6 +163,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     for i in range(1, len(str(r).split('>')), 2):
                          wifi.append(str(r).split('>')[i].split(',')[0] + ']')
+
 
                     for items in wifi:
                          wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']', '').replace('=',
@@ -201,7 +208,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     return self.devises
 
-         class Wifi(object):
+          class Wifi(object):
                """Connect to wi-fi networks/ Data about wifi."""
 
                def __init__(self):
@@ -220,10 +227,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  :return: 'Successful...' if you successfully connect to wi-fi.
                  """
 
-
                     objc._objc.loadBundle('CoreWLAN',
-                                    bundle_path='/System/Library/Frameworks/CoreWLAN.framework',
-                                    module_globals=globals())
+                                          bundle_path='/System/Library/Frameworks/CoreWLAN.framework',
+                                          module_globals=globals())
 
                     iface = CoreWLAN.CWInterface.interface()
 
@@ -234,6 +240,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     success_connect, error = iface.associateToNetwork_password_error_(network, password, None)
                     if error:
                          raise WifiNameConnectError(f'Can not connect to wifi network name "{wifi_network}"')
+                         
                def Disconnect(self):
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi off')
 
@@ -242,20 +249,22 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def connectToMacAddress(self):
                     """Connect to wi-fi which used your Mac.
-                    (Actually connect to Your Mac address."""
+                    (Actually connect to Your Mac address, start host Apmode.)"""
                     self.interface.startHostAPMode_(None)
 
-               def WifiNetworkNoise(self):
+               def NetworkNoise(self):
                     """Noise of current connected wi-fi network."""
                     return int(self.interface.noise())
 
-               def WifiBssid(self):
+               def Bssid(self):
                     ps = subprocess.getoutput(cmd='airport -I | grep BSSID').strip(' ')
                     return ps
 
                def InfoNetwork(self):
                     """Ruturn a lot of data about current wifi network"""
                     return str(self.interface.ipMonitor()).strip().split('>')[1]
+               def TransmitRate(self):
+                    return self.interface.transmitRate()
 
                def ChannelGhz(self):
                     """Ghz type channel.It is 2Ghz or 5Ghz."""
@@ -266,8 +275,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def RssiChannelValue(self):
                     return self.interface.aggregateRSSI()
 
+
                def _get_speed_by_current_network(self):  # Deleted method.
-                   raise NotImplementedError(
+                    raise NotImplementedError(
                          f'{repr(self._get_speed_by_current_network.__name__)} '
                          f'Deleted method. Because it already not support.')
 
@@ -296,9 +306,53 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def get_info(self, ssid):
                     return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid,
-                    None)).split('[')[1].split(', ')[:4]
+                                                                                                             None)).split('[')[1].split(', ')[:4]
 
-         class Switching(object):
+               def GetCounrtyCodeByCurrentWifi(self):
+                    return self.interface.countryCodeInternal()
+
+               def SetupDefaultDnsDommains(self, dns_address):
+                    """Change DNS setting of wi-fi network.
+                    :param dns_address address which available to confirm, default DNS settings."""
+                    if dns_address != (i for i in ('8.8.8.8', '8.8.4.4')):
+                        command = subprocess.getoutput(f'networksetup -setdnsservers Wi-Fi {dns_address}')
+
+                    else:
+
+                         store = SystemConfiguration.SCDynamicStoreCreate(None, 'Safari', None, None)
+                         primaryif = SystemConfiguration.SCDynamicStoreCopyValue(store, 'State:/Network/Global/IPv4')[
+                              'PrimaryInterface']
+
+                         preferences = SystemConfiguration.SCPreferencesCreateWithAuthorization(None, 'Safari', None,
+                                                                                                SystemConfiguration.SFAuthorization.authorization().authorizationRef())
+                         SystemConfiguration.SCPreferencesLock(preferences, True)
+
+                         # Get list of network services
+                         networkSet = SystemConfiguration.SCNetworkSetCopyCurrent(preferences)
+                         networkSetServices = SystemConfiguration.SCNetworkSetCopyServices(networkSet)
+
+                         for networkServiceIndex in networkSetServices:
+                              interface = SystemConfiguration.SCNetworkServiceGetInterface(networkServiceIndex)
+                              if primaryif != SystemConfiguration.SCNetworkInterfaceGetBSDName(interface):
+                                   continue
+
+                              # Load currently configured DNS servers
+                              networkProtocol = SystemConfiguration.SCNetworkServiceCopyProtocol(networkServiceIndex,
+                                                                                                 SystemConfiguration.kSCNetworkProtocolTypeDNS)
+                              DNSDict = SystemConfiguration.SCNetworkProtocolGetConfiguration(networkProtocol) or {}
+                              DNSDict[SystemConfiguration.kSCPropNetDNSServerAddresses] = ['192.168.23.12', '8.8.4.4']
+                              SystemConfiguration.SCNetworkProtocolSetConfiguration(networkServiceIndex, DNSDict)
+
+                              tuple_confirm = (
+                                   SystemConfiguration.SCPreferencesUnlock(preferences),
+                                   SystemConfiguration.SCPreferencesCommitChanges(preferences),
+                                   SystemConfiguration.SCPreferencesApplyChanges(preferences))
+                              if not any(tuple_confirm):
+                                   raise UserWarning('Setup dns setting did not confirmation.')
+                              else:
+                                   return 'Successful'
+                                   
+          class Switching(object):
                """Switch wi-fi/bluetooth"""
 
                def unplug_wifi(self):
@@ -347,7 +401,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                                              'is "bluetooth") to {click, click (menu item 2 of menu 1)}\'')
                     return 'Successful...'
 
-         class Brightness(object):
+          class Brightness(object):
                """Set brightness"""
 
                def __init__(self):
@@ -425,15 +479,18 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Get brightness percent"""
                     return round(float(self.get_cur_brightness_per.split(' ')[-1]), ndigits=1)
 
-         class SystemConfig(object):
+          class SystemConfig(object):
                """Data about mac"""
 
                def __init__(self):
-
-                    self.percent = list(IOPSCopyPowerSourcesByType(0))[0]['Current Capacity'] # ignore: noqa
+                    self.percent = list(IOPSCopyPowerSourcesByType(0))[0]['Current Capacity']  # ignore: noqa 401
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
                     self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
-                    self.size =  subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
+                    self.size = \
+                         subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(
+                              ":")[
+                              1].split(' ')
+
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
@@ -445,9 +502,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          cmd='sysctl machdep.xcpm.cpu_thermal_level sysctl machdep.xcpm.gpu_thermal_level')
 
                     self.name = Foundation.NSUserName()
-
-
-
 
                @property
                def devise_battery(self):
@@ -514,27 +568,35 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def sensor_temperature(self):
                     return round(int(self.temp.split('\n')[0].split(':')[-1]))
+
                @property
                def mac_name(self):
                     return self.name
+
                @property
                def darwin_version(self):
                     return dar.build_time_vars['BUILD_GNU_TYPE']
 
                def mac_location(self):
+                    """Return mac location from geolocation-service. Enable this functions for python.
+
+                    System Preferences -> Security and Privacy -> allow geolocation services for python.
+                    More info: https://howtoenable.net/how-to-enable-geolocation-on-mac/"""
 
                     manager = CoreLocation.CLLocationManager.alloc().init()
                     manager.delegate()
                     manager.startUpdatingLocation()
                     while CoreLocation.CLLocationManager.authorizationStatus() != 3 or manager.location() is None:
-                         sleep(.1)
+                         sleep(1)
                     coord = manager.location().coordinate()
                     lat, lon = coord.latitude, coord.longitude
                     return (lat, lon)
 
+               def mac_address(self):
+                    """Return mac address in format  XX:XX:XX:XX:XX:XX"""
+                    return self.net.hardwareAddress().split()[-1]
 
-
-         class VoiceOver(object):
+          class VoiceOver(object):
                """Voiceover text"""
 
                def text_voiceover(self, voice, text):
@@ -556,7 +618,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          else:
                               subprocess.getoutput(cmd=f'say -v {voice} -i {text}')
 
-         class PasswordManager(object):
+          class PasswordManager(object):
                def show_password_wifi(self, name_wifi_network):
                     password = subprocess.getoutput(cmd=f'security find-generic-password -wa {name_wifi_network}')
                     if name_wifi_network in subprocess.getoutput(cmd='/System/Library/PrivateFrameworks/Apple80211.'
@@ -565,11 +627,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                                  0] == 0:
                          return password.strip()
                     else:
-                         raise WifiValueError(f'Can not find wifi-network {repr(name_wifi_network)} in key chains.')
+                         raise ValueError(f'Can not find wifi-network {repr(name_wifi_network)} in key chains.')
 
-
-
-         class Notifier(object):
+          class Notifier(object):
                """Send different alerts"""
 
                def send_text_alert(self, text, title=''):
@@ -608,10 +668,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                   :param activate: application, which open when you click by notify.
                   :return: Successful.
                   """
-                    if activate in (i.name() for i in process_iter()) or activate is None:
-                         pass
-                    else:
-                         raise ApplicationNotExist
+
                     if len(str(file_icon).split()) > 1 or len(str(content_img).split()) > 1:
                          fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + repr(str(file_icon))
                          content = str(pathlib.Path(str(content_img)).cwd()) + '/' + repr(str(content_img))
@@ -650,7 +707,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          """ % (entr_text, title, button1, button2)
                     return subprocess.getoutput(cmd=cmd)
 
-         class Creator(object):
+          class Creator(object):
                """Create something."""
 
                def create_file(self, name, extension):
@@ -676,7 +733,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     else:
                          subprocess.getoutput(cmd=f'mkdir {name}')
 
-         class ScreenCapture(object):
+          class ScreenCapture(object):
                """Make screenshot/video with settings"""
 
                def __init__(self):
@@ -736,7 +793,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def available_extension(self):
                     return (self.AVAILABLE_EXTENSIONS)
 
-         class PhotoCapture(object):
+          class PhotoCapture(object):
 
                def capture(self, cam_index: int, extension, filename):
                     """
@@ -750,7 +807,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          cmd=f'/opt/local/bin/ffmpeg -f avfoundation -video_size 1280x720 -framerate 30 -i "{cam_index}" -vframes 1 {filename}.{extension}')
                     return 'Check file is %s.%s' % (filename, extension)
 
-         class AudioRecorder(object):
+          class AudioRecorder(object):
                """Audio recorder"""
 
                def __init__(self):
@@ -786,7 +843,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     else:
                          raise UnsupportedFormat('Method can make files only with extensions (\'wav', 'mp3\')')
 
-         class AppSystem(object):
+          class AppSystem(object):
                def __init__(self):
                     self.apps = process_iter()
 
@@ -810,6 +867,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     subprocess.getoutput(cmd=f'pkill {application_name}')
                     return 'Successful...'
 
+               def close_all_app(self):
+                    for apps in AppKit.NSWorkspace.sharedWorkspace().runningApplications():
+                         apps.terminate()
+
                def current_opened_app(self, pause):
                     sleep(pause)
                     activeAppName = AppKit.NSWorkspace.sharedWorkspace().activeApplication()['NSApplicationName']
@@ -827,7 +888,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     size = str(activeAppName).split(' ')[2] + str(activeAppName).split(' ')[3]
                     return size
 
-         class Clicker(object):
+          class Clicker(object):
                """Click keys"""
 
                def press(self, key):
@@ -838,7 +899,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          raise ValueError(
                               f'Method {repr(self.press.__name__)} support only 1 letter. Use {repr(self.write.__name__)}.')
 
-                    ev = AppKit.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                    ev = AppKit.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                          14,
                          (0, 0),  # location
                          0xa00,  # flags
@@ -860,7 +921,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     for i in text:
                          self.press(key=i)
 
-         class Open(object):
+          class Open(object):
 
                def application(self, application_name):
                     """
@@ -892,7 +953,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Open spotlight menu."""
                     MacCmd().Mouse().move_click(1212, 13)
 
-
                def open_file(self, path):
                     AppKit.NSWorkspace.sharedWorkspace().openFile_(
                          path)
@@ -900,11 +960,11 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def open_file_in_app(self, app_name, file):
                     open_objc = AppKit.NSWorkspace.sharedWorkspace().openFile_withApplication_(file, app_name)
 
-
                     if open_objc is False:
-                         raise OpenPossibilityError(f'Can not open file {file}, because application {app_name} not support format this files.')
+                         raise OpenPossibilityError \
+                              (f'Can not open file {file}, because application {app_name} not support format this files.')
 
-         class Sound(object):
+          class Sound(object):
                """
              class Voice add more available
              voices & effects(which beforehand
@@ -1010,10 +1070,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def playSoundByName(self, soundfile):
 
-                    url = Foundation.NSURL.URLWithString_(
+                    url = Foundation.NSURL.URLthString_(
                          'file:' + str(pathlib.Path(soundfile).cwd()) + str('/') + soundfile)
 
-                    self.duration_Start = AppKit.NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
+                    self.duration_Start = AppKit.NSSound.alloc().initthContentsOfURL_byReference_(url, True)
                     try:
                          self.duration_Start.play()
 
@@ -1025,7 +1085,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def sound_length(self, file):
                     return mutagen.mp3.MP3(file).info.length
 
-         class AppConfigure(object):
+          class AppConfigure(object):
                """App-settings"""
 
                def get_full_path_by_app_name(self, app):
@@ -1043,7 +1103,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     else:
                          return subprocess.getoutput(cmd=path).split()[0]
 
-         class FileConfig(object):
+          class FileConfig(object):
 
                def get_date_create_file(self, path):
                     """
@@ -1086,7 +1146,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     else:
                          raise FileExistsError(f'No file name {path}')
 
-         class Volume(object):
+          class Volume(object):
                def __init__(self):
 
                     self.volume = 'osascript -e "set Volume %s"'
@@ -1147,7 +1207,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     def doKey(down):
                          # NSEvent.h script
                          NSSystemDefined = 14
-                         eventInit = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                         eventInit = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,
                               (0, 0),
                               0xa00 if down else 0xb00,
@@ -1168,7 +1228,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     def doKey(down):
                          # NSEvent.h script
                          NSSystemDefined = 14
-                         eventInit = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                         eventInit = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,
                               (0, 0),
                               0xa00 if down else 0xb00,  # F11/F12 KEY
@@ -1185,7 +1245,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     doKey(True)
                     doKey(False)
 
-         class WebCameraCapture(object):
+          class WebCameraCapture(object):
                """Collect data in camera"""
 
                def __init__(self):
@@ -1219,24 +1279,28 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     return '[' + str(self.devises.strip().split('[', maxsplit=1)[-1].split(': ')[0])
 
-         class Mouse(object):
+          class Mouse(object):
                """Mouse events"""
 
                def __init__(self):
                     try:
                          location = AppKit.NSEvent.mouseLocation()
-                         position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - round(location.y)))
-                         self.x = position[0]
-                         self.y = position[1]
+                         self.position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - round(location.y)))
+
                     except AttributeError:
                          return
 
                @classmethod
                def EventInitScript(cls, ev, x, y, button):
+
                     """Initalizate mouse objc x: x-pos, y:y-pos"""
                     mouseEvent = Quartz.CGEventCreateMouseEvent(None,
                                                                 ev, (x, y), button)
                     Quartz.CGEventPost(Quartz.kCGHIDEventTap, mouseEvent)
+
+               call = Mock(side_effect=EventInitScript)
+               if call.called:
+                    raise CallError()
 
                def ClickEventInitScript(self, x, y, type):
 
@@ -1269,9 +1333,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                @property
                def mouse_position(self):
                     """Return mouse position"""
-                    return self.x, self.y
+                    return self.position[0], self.position[1]
 
-         class Theme:
+          class Theme:
                def __init__(self):
                     self.cmd = 'osascript -e \'tell app "System Events" to tell appearance ' \
                                'preferences to set dark mode to not dark mode\''
@@ -1280,28 +1344,34 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     sleep(pause)
                     subprocess.getoutput(cmd=self.cmd)
 
-         class Buffer:
+               def current_theme(self):
+                    if subprocess.getstatusoutput('defaults find AppleInterfaceStyle')[-1] in (0 >> 1):
+                         return "Light"
+
+                    return subprocess.getoutput('defaults find AppleInterfaceStyle').split(": ")[-1].split()[:2:-1][-1].replace(r';', '')
+
+          class Buffer:
                def copyText(self, text):
                     init = AppKit.NSStringPboardType
 
                     pb = AppKit.NSPasteboard.generalPasteboard()
                     pb.declareTypes_owner_([init], None)
 
-                    newStrIng = AppKit.NSString.stringWithString_(text)
+                    newStrIng = AppKit.NSString.stringthString_(text)
                     newData = newStrIng.nsstring().dataUsingEncoding_(AppKit.NSUTF8StringEncoding)
                     pb.setData_forType_(newData, init)
 
                def paste(self):
-                    return pyperclip.paste
+                    return pyperclip.paste()
 
-         class Illumination:
+          class Illumination:
                def increase_illumination(self):
                     def doKey(down):
                          NSSystemDefined = 14
 
                          DECODE_TO_INT_KEY_F6 = 21
 
-                         ev = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                         ev = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,  # type
                               (0, 0),  # location
                               0xa00 if down else 0xb00,  # flags
@@ -1325,7 +1395,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                          DECODE_TO_INT_KEY_F5 = 22
 
-                         ev = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                         ev = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
                               NSSystemDefined,  # type
                               (0, 0),  # location
                               0xa00 if down else 0xb00,  # flags
@@ -1342,7 +1412,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     doKey(True)
                     doKey(False)
 
-         class BackGroundScreen:
+          class BackGroundScreen:
 
                def set_backgroud(self, filename: str, image_bg_color='white'):
                     try:
@@ -1350,21 +1420,21 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     except Exception:
                          raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
                     if image_bg_color == 'green':
-                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.greenColor()
                          }
                     elif image_bg_color == 'red':
-                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.redColor()
                          }
                     elif image_bg_color == 'blue':
-                         file_url = Foundation.NSURL.fileURLWithPath_(filename)
+                         file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
