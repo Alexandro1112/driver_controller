@@ -1,25 +1,21 @@
-from .info import *
-from.CONSTANTS import *
-from .exceptions import *
+
 # ---------------------- #
 # Initialize scripts 
 
 from sys import platform
 
-__all__ = ['platform']
-
 
 if platform == 'linux':
 
-    from ._linux_engine import *
+    from ._linux_engine import LinuxCmd
 
 elif platform == 'darwin':
 
-    from ._mac_engine import *
+    from ._mac_engine import MacCmd
 
 elif platform == 'win32':
 
-    from ._windows_engine import *
+    from ._windows_engine import WindowsCmd
 
 else:
     raise OSError()
