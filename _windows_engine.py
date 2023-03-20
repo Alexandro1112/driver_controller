@@ -38,12 +38,12 @@ if sys.platform.lower() == 'win32':
                          return password.strip()
 
 
-     class Brightness:
-          def set_brightness(self, brightness):
-               if type(brightness) != int or type(brightness) != float:
-                    raise ValueBrightnessError('Brightness must be type:', int, float)
-               cmd = 'powershell (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,%s)'
-               subprocess.getoutput(cmd=cmd)
+          class Brightness:
+              def set_brightness(self, brightness):
+                  if type(brightness) != int or type(brightness) != float:
+                        raise ValueBrightnessError('Brightness must be type:', int, float)
+                  cmd = 'powershell (Get-WmiObject -Namespace root/WMI -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1,%s)'
+                  subprocess.getoutput(cmd=cmd)
 else:
      raise OSError("")
 
