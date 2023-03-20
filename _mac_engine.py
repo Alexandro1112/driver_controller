@@ -41,7 +41,6 @@
 # TODO: Make more classes
 #                                            Finally, run code.
 
-import psutil
 
 import mutagen.mp3
 # Os
@@ -60,15 +59,15 @@ import sys
 from unittest.mock import Mock
 
 # pause for methods
-from time import (sleep, ctime, time)
+from time import (sleep, ctime)
 
-import typing
+
 
 # Parse xml
 from xml.etree import ElementTree
 
 # Constants
-from .CONSTANTS import KeyHexType, RED_COLOR, GREEN_COLOR, YELLOW_COLOR, BLUE_COLOR, BLACK_COLOR
+from .CONSTANTS import KeyHexType
 # Platform
 import platform
 
@@ -116,7 +115,8 @@ try:
 except:
      assert 'Installing Quartz, psutil, loger, pyobjc, AppKit, sounddevice pillow'
 
-__all__ = ['MacCmd', 'CONSTANTS']
+
+
 
 IOKit = Foundation.NSBundle.bundleWithIdentifier_('com.apple.framework.IOKit')
 
@@ -146,7 +146,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     """ Function output all wi-fi networks,
                     which available for your devise."""
                     if 'loadBundle' in dir(objc):
-                         pass
+                        pass
                     else:
                          raise AttributeError
 
@@ -171,12 +171,13 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
 
                     yield set(sorted(wifi2))
 
+
                def get_list_bluetooth_device(self):
                     """ Function output all bluetooth devise(s),
                   which available for your devise."""
 
-                    return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[
-                                                                             0].strip() == '' else None
+                    return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() ==\
+                                                                                                            '' else None
 
                def get_list_cameras(self):
 
@@ -300,13 +301,16 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     """Return Wi-fi channel """
                     return self.interface.channel()
 
+               def UnplugWifi(self):
+                    """Unplug wi-fi"""
+                    self.interface.setPower_error_(None, None)
+
                def SecurityType(self):
                     """Return security type of current wi-fi network"""
                     return self.secT.split(':')[-1]
 
                def get_info(self, ssid):
-                    return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid,
-                                                                                                             None)).split('[')[1].split(', ')[:4]
+                    return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid, None)).split('[')[1].split(', ')[:4]
 
                def GetCounrtyCodeByCurrentWifi(self):
                     return self.interface.countryCodeInternal()
@@ -486,10 +490,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     self.percent = list(IOPSCopyPowerSourcesByType(0))[0]['Current Capacity']  # ignore: noqa 401
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
                     self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
-                    self.size = \
-                         subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(
-                              ":")[
-                              1].split(' ')
+                    self.size = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
 
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
@@ -575,11 +576,12 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
 
                @property
                def darwin_version(self):
+                    if dar is None:
+                         return ""
                     return dar.build_time_vars['BUILD_GNU_TYPE']
 
                def mac_location(self):
                     """Return mac location from geolocation-service. Enable this functions for python.
-
                     System Preferences -> Security and Privacy -> allow geolocation services for python.
                     More info: https://howtoenable.net/how-to-enable-geolocation-on-mac/"""
 
@@ -587,13 +589,13 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     manager.delegate()
                     manager.startUpdatingLocation()
                     while CoreLocation.CLLocationManager.authorizationStatus() != 3 or manager.location() is None:
-                         sleep(1)
+                        sleep(1)
                     coord = manager.location().coordinate()
                     lat, lon = coord.latitude, coord.longitude
                     return (lat, lon)
 
                def mac_address(self):
-                    """Return mac address in format  XX:XX:XX:XX:XX:XX"""
+                    """Return mac address in format  XX:XX:XX:XX:XX:XX(not show him)"""
                     return self.net.hardwareAddress().split()[-1]
 
           class VoiceOver(object):
@@ -657,6 +659,15 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                def send_lateral_message(self, label, activate: [None, str], subtitle, text, file_icon: str,
                                         sound: [None], content_img=None):
                     """
+                    >>> import driver_controller
+                    >>> driver_controller.MacCmd().Notifier().send_lateral_message(
+                    >>> label='Label of message',
+                    >>> activate='Safari',
+                    >>> subtitle='Subtitle of message',
+                    >>> text='Text of message',
+                    >>> file_icon='icon_.png',
+                    >>> sound=driver_controller.CONSTANTS.SOUNDS_PING_SOUND,
+                    >>> content_img='icon_.png')
                   Make Lateral message with:
                   :param label: Main title on message
                   :param content_img: Image which local in center
@@ -672,7 +683,8 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     if len(str(file_icon).split()) > 1 or len(str(content_img).split()) > 1:
                          fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + repr(str(file_icon))
                          content = str(pathlib.Path(str(content_img)).cwd()) + '/' + repr(str(content_img))
-                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage '{content}' -activate 'com.apple.{activate if activate is not None else ''}'" % (
+                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentIm" \
+                                    f"age '{content}' -activate 'com.apple.{activate if activate is not None else ''}'" % (
                               label, subtitle, text, fullpath)
                          commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
 
@@ -680,7 +692,8 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     else:
                          fullpath = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
                          content2 = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
-                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentImage '{content2}' -activate 'com.apple.{activate}'" % (
+                         commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentIma" \
+                                    f"ge '{content2}' -activate 'com.apple.{activate}'" % (
                               label, subtitle, text, fullpath)
                          commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
 
@@ -698,7 +711,8 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     cmd = """
                          a=$(osascript -e 'try
                          tell app "SystemUIServer"
-                         set answer to text returned of (display dialog "" default answer "%s" with title "%s" buttons {"%s", "%s"})
+                         set answer to text returned of (display dialog "" default answer "%s" with title "%s"
+                         buttons {"%s", "%s"})
                          end
                          end
                          activate app (path to frontmost application as text)
@@ -1330,6 +1344,15 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                                                                            Quartz.CoreGraphics.kCGMouseButtonLeft)
                     Quartz.CoreGraphics.CGEventPost(Quartz.CoreGraphics.kCGHIDEventTap, theEvent)
 
+               def scrolling(self, turnover: int):
+                    scrollWheelEvent = Quartz.CGEventCreateScrollWheelEvent(
+                         None,
+                         Quartz.kCGScrollPhaseBegan,
+                         1,
+                         15 if turnover >= 0 else -15)
+                    Quartz.CGEventPost(Quartz.kCGHIDEventTap, scrollWheelEvent)
+
+
                @property
                def mouse_position(self):
                     """Return mouse position"""
@@ -1345,7 +1368,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     subprocess.getoutput(cmd=self.cmd)
 
                def current_theme(self):
-                    if subprocess.getstatusoutput('defaults find AppleInterfaceStyle')[-1] in (0 >> 1):
+                    if 'AppleInterfaceStyle' in subprocess.getoutput('defaults find AppleInterfaceStyle'):
                          return "Light"
 
                     return subprocess.getoutput('defaults find AppleInterfaceStyle').split(": ")[-1].split()[:2:-1][-1].replace(r';', '')
@@ -1371,16 +1394,16 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
 
                          DECODE_TO_INT_KEY_F6 = 21
 
-                         ev = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
-                              NSSystemDefined,  # type
-                              (0, 0),  # location
-                              0xa00 if down else 0xb00,  # flags
-                              0,  # timestamp
-                              0,  # window
-                              0,  # ctx
-                              8,  # subtype
-                              (DECODE_TO_INT_KEY_F6 << 16) | ((0xa if down else 0xb) << 8),  # data1
-                              -1  # data2
+                         ev = Quartz.NSEvent.otherEventWithType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
+                              NSSystemDefined,
+                              (0, 0),
+                              0xa00 if down else 0xb00,
+                              0,
+                              0,
+                              0,
+                              8,
+                              (DECODE_TO_INT_KEY_F6 << 16) | ((0xa if down else 0xb) << 8),
+                              -1
                          )
                          cev = ev.CGEvent()
                          Quartz.CGEventPost(0, cev)
@@ -1464,9 +1487,9 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
                          raise RgbValueError(f'No color {image_bg_color} for background.')
 
-                    ws = AppKit.NSWorkspace.sharedWorkspace()
+                    ws__ = AppKit.NSWorkspace.sharedWorkspace()
                     for screen in AppKit.NSScreen.screens():
-                         ws.setDesktopImageURL_forScreen_options_error_(
+                         ws__.setDesktopImageURL_forScreen_options_error_(
                               file_url, screen, config, None)
 
 
