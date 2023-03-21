@@ -1,4 +1,3 @@
-
 # /opt/anaconda3/bin/python
 # Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.
 # The library is designed for Mac-OS, performs technical
@@ -40,7 +39,8 @@
 # TESTED BY Mac Os Big Sur 11.4.7(+), Mac os Catalina(+) 10.15.7, Mac Os High Mojave(confirm osascript) 10.13
 # TODO: Make more classes
 #                                            Finally, run code.
-
+import typing
+import warnings
 
 import mutagen.mp3
 # Os
@@ -61,8 +61,6 @@ from unittest.mock import Mock
 # pause for methods
 from time import (sleep, ctime)
 
-
-
 # Parse xml
 from xml.etree import ElementTree
 
@@ -71,10 +69,12 @@ from .CONSTANTS import KeyHexType
 # Platform
 import platform
 
+from warnings import simplefilter
 # Exceptions for methods
 from .exceptions import *
+
 try:
-     # Any mac-os not support this config-file.
+     # WARNING: Any mac-os not support this config-file.
      import _sysconfigdata__darwin_darwin as dar
 except:
      dar = None
@@ -108,6 +108,8 @@ try:
      from objc._framework import infoForFramework
      import objc._objc
 
+     import CoreFoundation
+
      # Unplug warnings, unexpected errors
      from shutup import please
 
@@ -115,23 +117,56 @@ try:
 except:
      assert 'Installing Quartz, psutil, loger, pyobjc, AppKit, sounddevice pillow'
 
+iokit = {}
 
-
+iokitBundle = objc.initFrameworkWrapper(
+  "IOKit",
+  frameworkIdentifier="com.apple.iokit",
+  frameworkPath=objc.pathForFramework("/System/Library/Frameworks/IOKit.framework"),
+  globals=globals()
+)
 
 IOKit = Foundation.NSBundle.bundleWithIdentifier_('com.apple.framework.IOKit')
 
-functions = [("IOServiceGetMatchingService", b"II@"),
-   ("IOServiceMatching", b"@*"),
-   ("IORegistryEntryCreateCFProperties", b"IIo^@@I"),
-("IOPSCopyPowerSourcesByType", b"@I"),
-   ("IOPSCopyPowerSourcesInfo", b"@"),
-   ]
+functions = [('IOServiceGetMatchingService', b'II@'),
+             ('IOServiceMatching', b'@*'),
+             ("IODisplayGetFloatParameter", b'iII@o^f'),
+             ('IORegistryEntryCreateCFProperties', b'IIo^@@I'),
+             ('IOPSCopyPowerSourcesByType', b'@I'),
+             ('IOPSCopyPowerSourcesInfo', b'@'),
+             ('IODisplaySetFloatParameter', b'iII@f'),
+             ]
 
-__init__ = objc._objc.loadBundleFunctions(IOKit, globals(), functions)
+
+
+variables = [
+  ("kIODisplayNoProductName", b"I"),
+  ("kIOMasterPortDefault", b"I"),
+  ("kIODisplayOverscanKey", b"*"),
+  ("kDisplayVendorID", b"*"),
+  ("kDisplayProductID", b"*"),
+  ("kDisplaySerialNumber", b"*"),
+]
+
+
+objc._objc.loadBundleFunctions(iokitBundle, iokit, functions)
+objc._objc.loadBundleFunctions(IOKit, globals(), functions)
+objc._objc.loadBundleVariables(iokitBundle, globals(), variables)
+
+for var in variables:
+  key = "{}".format(var[0])
+  if key in globals():
+      iokit[key] = globals()[key]
+
+
+iokit["kDisplayBrightness"] = CoreFoundation.CFSTR("brightness")
+iokit["kDisplayUnderscan"] = CoreFoundation.CFSTR("pscn")
+
+
 
 if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and \
-int(sys.version.split(' | ')[0].split('.')[0]) >= 3 and \
-int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 until 10.8 not support.
+        int(sys.version.split(' | ')[0].split('.')[0]) >= 3 and \
+        int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 until 10.8 not support.
      class MacCmd:
           """Class with subclasees."""
 
@@ -146,7 +181,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     """ Function output all wi-fi networks,
                     which available for your devise."""
                     if 'loadBundle' in dir(objc):
-                        pass
+                         pass
                     else:
                          raise AttributeError
 
@@ -164,20 +199,18 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     for i in range(1, len(str(r).split('>')), 2):
                          wifi.append(str(r).split('>')[i].split(',')[0] + ']')
 
-
                     for items in wifi:
                          wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']', '').replace('=',
                                                                                                                   '').strip())
 
                     yield set(sorted(wifi2))
 
-
                def get_list_bluetooth_device(self):
                     """ Function output all bluetooth devise(s),
                   which available for your devise."""
 
-                    return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() ==\
-                                                                                                            '' else None
+                    return self.bluetooth.split('Bluetooth:')[0] if not self.bluetooth.split('Bluetooth:')[0].strip() == \
+                                                                        '' else None
 
                def get_list_cameras(self):
 
@@ -241,7 +274,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     success_connect, error = iface.associateToNetwork_password_error_(network, password, None)
                     if error:
                          raise WifiNameConnectError(f'Can not connect to wifi network name "{wifi_network}"')
-                         
+
                def Disconnect(self):
                     subprocess.getoutput(cmd='networksetup -setnetworkserviceenabled Wi-Fi off')
 
@@ -264,6 +297,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                def InfoNetwork(self):
                     """Ruturn a lot of data about current wifi network"""
                     return str(self.interface.ipMonitor()).strip().split('>')[1]
+
                def TransmitRate(self):
                     return self.interface.transmitRate()
 
@@ -275,7 +309,6 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
 
                def RssiChannelValue(self):
                     return self.interface.aggregateRSSI()
-
 
                def _get_speed_by_current_network(self):  # Deleted method.
                     raise NotImplementedError(
@@ -310,7 +343,9 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     return self.secT.split(':')[-1]
 
                def get_info(self, ssid):
-                    return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid, None)).split('[')[1].split(', ')[:4]
+                    return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid,
+                                                                                                             None)).split(
+                         '[')[1].split(', ')[:4]
 
                def GetCounrtyCodeByCurrentWifi(self):
                     return self.interface.countryCodeInternal()
@@ -319,7 +354,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     """Change DNS setting of wi-fi network.
                     :param dns_address address which available to confirm, default DNS settings."""
                     if dns_address != (i for i in ('8.8.8.8', '8.8.4.4')):
-                        command = subprocess.getoutput(f'networksetup -setdnsservers Wi-Fi {dns_address}')
+                         command = subprocess.getoutput(f'networksetup -setdnsservers Wi-Fi {dns_address}')
 
                     else:
 
@@ -352,10 +387,10 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                                    SystemConfiguration.SCPreferencesCommitChanges(preferences),
                                    SystemConfiguration.SCPreferencesApplyChanges(preferences))
                               if not any(tuple_confirm):
-                                   raise UserWarning('Setup dns setting did not confirmation.')
+                                   raise warnings.warn('Setup dns setting did not confirmation.')
                               else:
                                    return 'Successful'
-                                   
+
           class Switching(object):
                """Switch wi-fi/bluetooth"""
 
@@ -409,33 +444,40 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                """Set brightness"""
 
                def __init__(self):
-                    self.get_cur_brightness_per = subprocess.getoutput(cmd='brightness -l')
+                    simplefilter("ignore")
+                    simplefilter("default")
+                    self.get_cur_brightness_per = iokit["IODisplayGetFloatParameter"](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()),
+                                                                                      1,
+                                                                                      iokit["kDisplayBrightness"], None)
 
                def set_brightness(self, brightness_percent: [int, float]):
                     """
                  Automatically set brightness
-                 percent [type - int]
-                 example: 25; 50; 75; 100(max)
+                 percent [type - float]
+                 example: 0.25; 0.50; 0.75; 0.1(max)
                  :param brightness_percent:
-                 :return: Successfully
+                 :return: Successfully.
+                 P.s: will be show warning:
+                 /Library/Frameworks/Python.framework/Versions/X.XX/lib/pythonX.XX/site-packages/objc/_bridgesupport.py
+                 :666: RuntimeWarning: Error parsing BridgeSupport data for IOKit: Invalid array definition in type
+                 signature: [255{ATASMARTLogEntry}}
+                 warnings.warn(...). Ignore them.
                  """
 
-                    if not type(brightness_percent) != int or type(brightness_percent) != float:
-                         raise ValueBrightnessError('Type value of brightness must be ', int)
-                    elif isinstance(brightness_percent, float):
-                         subprocess.getoutput(cmd=f'brightness {brightness_percent}')
-
-                    else:
-                         if brightness_percent == 100:
-                              brightness_percent -= brightness_percent + 1
-                              subprocess.getoutput(cmd=f'brightness 1')
-
-                         elif isinstance(brightness_percent / 10, float):
-                              brightness_percent *= 10
-                              subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
-
+                    try:
+                         brightness_error = iokit["IODisplaySetFloatParameter"](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()),
+                                                                                1,iokit["kDisplayBrightness"], brightness_percent)
+                         please()
+                         if brightness_error != 0:
+                             raise Exception('Error code = {}'.format(brightness_error))
+                         elif brightness_error == -536870201:
+                             raise ScreenErrorIndex( # 2077751737 - Main
+                                   f'The screen index is incorrectly specified. use the default index -'
+                                   f' {Quartz.CGMainDisplayID().__format__("-")}')
                          else:
-                              subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
+                             pass # No errors.
+                    except ValueError:
+                              raise ValueBrightnessError('Type value of brightness must be ', float)
 
                def set_max_brightness(self):
                     """
@@ -443,8 +485,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                  screen equal one hundred.
                  :return: Successfully
                  """
-                    subprocess.getoutput(cmd='brightness -v 1')
-
+                    self.set_brightness(1.0)
                def set_min_brightness(self):
                     """
                  Set min brightness of
@@ -452,7 +493,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                  :return: Successfully
                  """
 
-                    subprocess.getoutput(cmd='brightness -v 0')
+                    self.set_brightness(0.0)
 
                def increase_brightness(self, division):
                     """Increase brightness by 1 division"""
@@ -476,12 +517,14 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                def sleep_mac(self, pause: [int, float]):
                     """Sleep Mac"""
                     sleep(pause)
-                    subprocess.getoutput(cmd="osascript - e'tell application \"finder\" to sleep'")
+                    subprocess.getoutput(cmd="osascript - e 'tell application \"finder\" to sleep'")
 
                @property
                def get_brightness(self):
                     """Get brightness percent"""
-                    return round(float(self.get_cur_brightness_per.split(' ')[-1]), ndigits=1)
+                    if self.get_cur_brightness_per[0] != 0:
+                         raise ScreenWarning('Not support bridge objective-c and python via IOKit.')
+                    return self.get_cur_brightness_per[-1]
 
           class SystemConfig(object):
                """Data about mac"""
@@ -490,12 +533,14 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     self.percent = list(IOPSCopyPowerSourcesByType(0))[0]['Current Capacity']  # ignore: noqa 401
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
                     self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
-                    self.size = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
+                    self.size = \
+                    subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[
+                         1].split(' ')
 
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
-                    self.num = 'system_profiler SPHardwareDataType | grep "Serial Number (system)"'
+                    self.num = 'system_profiler SPHardwareDataType | grep x"Serial Number (system)"'
                     self.disk_mem = 'diskutil list | grep GUID_partition_scheme'  # Diskutil not found: https://superuser.com/questions/213088/diskutil-command-not-found-in-os-x-terminal
                     self.video_crd_nm = subprocess.getoutput(
                          cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')  # system profiler: command not found https://github.com/jlhonora/lsusb/issues/12?ysclid=ldu37f5jk9865312203
@@ -589,7 +634,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     manager.delegate()
                     manager.startUpdatingLocation()
                     while CoreLocation.CLLocationManager.authorizationStatus() != 3 or manager.location() is None:
-                        sleep(1)
+                         sleep(1)
                     coord = manager.location().coordinate()
                     lat, lon = coord.latitude, coord.longitude
                     return (lat, lon)
@@ -685,7 +730,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                          content = str(pathlib.Path(str(content_img)).cwd()) + '/' + repr(str(content_img))
                          commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentIm" \
                                     f"age '{content}' -activate 'com.apple.{activate if activate is not None else ''}'" % (
-                              label, subtitle, text, fullpath)
+                                         label, subtitle, text, fullpath)
                          commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
 
 
@@ -694,7 +739,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                          content2 = str(pathlib.Path(str(file_icon)).cwd()) + '/' + str(file_icon)
                          commands = f"terminal-notifier -title '%s' -subtitle '%s' -message '%s' -appIcon %s -contentIma" \
                                     f"ge '{content2}' -activate 'com.apple.{activate}'" % (
-                              label, subtitle, text, fullpath)
+                                         label, subtitle, text, fullpath)
                          commands2 = f'afplay /System/Library/Sounds/{sound if sound is not None else ""}.aiff'
 
                     subprocess.getoutput(cmd=commands)
@@ -1302,7 +1347,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                          self.position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - round(location.y)))
 
                     except AttributeError:
-                         return
+                        return
 
                @classmethod
                def EventInitScript(cls, ev, x, y, button):
@@ -1352,7 +1397,6 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                          15 if turnover >= 0 else -15)
                     Quartz.CGEventPost(Quartz.kCGHIDEventTap, scrollWheelEvent)
 
-
                @property
                def mouse_position(self):
                     """Return mouse position"""
@@ -1371,7 +1415,8 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                     if 'AppleInterfaceStyle' in subprocess.getoutput('defaults find AppleInterfaceStyle'):
                          return "Light"
 
-                    return subprocess.getoutput('defaults find AppleInterfaceStyle').split(": ")[-1].split()[:2:-1][-1].replace(r';', '')
+                    return subprocess.getoutput('defaults find AppleInterfaceStyle').split(": ")[-1].split()[:2:-1][
+                         -1].replace(r';', '')
 
           class Buffer:
                def copyText(self, text):
@@ -1449,6 +1494,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.greenColor()
                          }
+                         
                     elif image_bg_color == 'red':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
@@ -1456,6 +1502,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.redColor()
                          }
+                         
                     elif image_bg_color == 'blue':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
@@ -1463,6 +1510,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blueColor()
                          }
+                         
                     elif image_bg_color == 'yellow':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1470,6 +1518,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.yellowColor()
                          }
+                         
                     elif image_bg_color == 'white':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1477,6 +1526,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.whiteColor()
                          }
+                         
                     elif image_bg_color == 'black':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1484,6 +1534,7 @@ int(sys.version.split(' | ')[0].split('.')[1]) >= 7:  # Mac version from 10.6 un
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blackColor()
                          }
+                         
                     elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
                          raise RgbValueError(f'No color {image_bg_color} for background.')
 
@@ -1497,4 +1548,4 @@ else:
      raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
 if __name__ == '__main__':
-    exit('Welcome to driver_controller!')
+     exit('Welcome to driver_controller!')
