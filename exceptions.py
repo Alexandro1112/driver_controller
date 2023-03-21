@@ -4,11 +4,16 @@ Individual exceptions for driver_controller
 
 """
 
+try:
+    exc = ExceptionGroup
+except NameError:
+    exc = ReferenceError
+
 
 class ApplicationNameError(NameError):
     """
      App with pointed out name not exist.
-     """
+    """
 
 
 class ApplicationNotExist(SystemError):
@@ -61,8 +66,24 @@ class PathError(FileNotFoundError):
     pass
 
 
+class CallError(exc):
+    pass
+
+
 class RgbValueError(ValueError):
     """No available color for bg"""
     pass
+
+
+class OpenPossibilityError(FileExistsError):
+    """Can not open file in that app."""
+
+
+class ScreenErrorIndex(IndexError):
+    """Screen ID not exist."""
+    
+    
+class ScreenWarning(Warning):
+    """Not support bridge with objective-c and python via IOKit."""
 
 # END FILE
