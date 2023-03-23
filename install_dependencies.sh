@@ -16,7 +16,7 @@ if [[ "$plt" == 'Linux' ]]; then
     brew install terminal-notifier && echo -e "${GREEN} Successful!"
 elif [[ "$plt" == 'Darwin' ]]; then
     $ responses= 'Your Platform:Mac-os: Wait installation..'
-    cd /Users/admin/PycharmProjects/~
+    cd /Users/<NAME>/PycharmProjects/~
     # ܿܿܿܿܿܿܿܿܿܿܿܿܿܿܿܿReplace '~' to working path to directory
     brew install ffmpeg
     brew install blueutil
@@ -24,7 +24,11 @@ elif [[ "$plt" == 'Darwin' ]]; then
     brew install terminal-notifier && echo -e "${GREEN} Successful!"
 
 
-else
+elif [[ "$plt" == 'Win32' ]]; then
     echo "${YELLOW} For windows no dependencies. Run Code."
     exit 1;
+else
+    echo "platform "$plt" not support."
+
+
  fi
