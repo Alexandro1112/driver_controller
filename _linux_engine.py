@@ -51,6 +51,21 @@ if sys.platform == 'linux':
 
                          subprocess.getoutput(cmd=f'brightness 0.{brightness_percent}')
                          return 'Successful...'
+             def decrease_brightness(self, division):
+                  for i in division:
+                      subprocess.getoutput(cmd='xdotool key XF86MonBrightnessDown')
+                  if division == 0:
+                       division += division.imag
+                  division += 1
+             def increase_brightness(self, division):
+                  for i in division:
+                      subprocess.getoutput(cmd='xdotool key XF86MonBrightnessUp')
+                  if division == 0:
+                       division += division.imag
+                  division += 1
+                       
+                       
+                  
 
          class Switcher(object):
              def unplug_bluetooth(self):
