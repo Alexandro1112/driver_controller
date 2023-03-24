@@ -42,6 +42,7 @@
 import typing
 import warnings
 
+import js2py
 import mutagen.mp3
 # Os
 import os
@@ -117,50 +118,55 @@ try:
 except:
      assert 'Installing Quartz, psutil, loger, pyobjc, AppKit, sounddevice pillow'
 
-iokit = {}
+iokit = None
 
-iokitBundle = objc.initFrameworkWrapper(
-  "IOKit",
-  frameworkIdentifier="com.apple.iokit",
-  frameworkPath=objc.pathForFramework("/System/Library/Frameworks/IOKit.framework"),
-  globals=globals()
-)
+def init():
+     global iokit
+     iokit = {}
 
-IOKit = Foundation.NSBundle.bundleWithIdentifier_('com.apple.framework.IOKit')
+     iokitBundle = objc.initFrameworkWrapper(
+       "IOKit",
+       frameworkIdentifier="com.apple.iokit",
+       frameworkPath=objc.pathForFramework("/System/Library/Frameworks/IOKit.framework"),
+       globals=globals()
+     )
 
-functions = [('IOServiceGetMatchingService', b'II@'),
-             ('IOServiceMatching', b'@*'),
-             ("IODisplayGetFloatParameter", b'iII@o^f'),
-             ('IORegistryEntryCreateCFProperties', b'IIo^@@I'),
-             ('IOPSCopyPowerSourcesByType', b'@I'),
-             ('IOPSCopyPowerSourcesInfo', b'@'),
-             ('IODisplaySetFloatParameter', b'iII@f'),
-             ]
+     IOKit = Foundation.NSBundle.bundleWithIdentifier_('com.apple.framework.IOKit')
 
-
-
-variables = [
-  ("kIODisplayNoProductName", b"I"),
-  ("kIOMasterPortDefault", b"I"),
-  ("kIODisplayOverscanKey", b"*"),
-  ("kDisplayVendorID", b"*"),
-  ("kDisplayProductID", b"*"),
-  ("kDisplaySerialNumber", b"*"),
-]
+     functions = [('IOServiceGetMatchingService', b'II@'),
+                  ('IOServiceMatching', b'@*'),
+                  ("IODisplayGetFloatParameter", b'iII@o^f'),
+                  ("IODisplayGetIntegerRangeParameter", b'I'),
+                  ('IORegistryEntryCreateCFProperties', b'IIo^@@I'),
+                  ('IOPSCopyPowerSourcesByType', b'@I'),
+                  ('IOPSCopyPowerSourcesInfo', b'@'),
+                  ('IODisplaySetFloatParameter', b'iII@f'),
+                  ]
 
 
-objc._objc.loadBundleFunctions(iokitBundle, iokit, functions)
-objc._objc.loadBundleFunctions(IOKit, globals(), functions)
-objc._objc.loadBundleVariables(iokitBundle, globals(), variables)
 
-for var in variables:
-  key = "{}".format(var[0])
-  if key in globals():
-      iokit[key] = globals()[key]
+     variables = [
+       ("kIODisplayNoProductName", b"I"),
+       ("kIOMasterPortDefault", b"I"),
+       ("kIODisplayOverscanKey", b"*"),
+       ("kDisplayVendorID", b"*"),
+       ("kDisplayProductID", b"*"),
+       ("kDisplaySerialNumber", b"*"),
+     ]
 
 
-iokit["kDisplayBrightness"] = CoreFoundation.CFSTR("brightness")
-iokit["kDisplayUnderscan"] = CoreFoundation.CFSTR("pscn")
+     objc._objc.loadBundleFunctions(iokitBundle, iokit, functions)
+     objc._objc.loadBundleFunctions(IOKit, globals(), functions)
+     objc._objc.loadBundleVariables(iokitBundle, globals(), variables)
+
+     for var in variables:
+       key = "{}".format(var[0])
+       if key in globals():
+           iokit[key] = globals()[key]
+
+
+     iokit["kDisplayBrightness"] = CoreFoundation.CFSTR("brightness")
+     iokit["kDisplayUnderscan"] = CoreFoundation.CFSTR("pscn")
 
 
 
@@ -444,12 +450,15 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                """Set brightness"""
 
                def __init__(self):
+                    global iokit
                     simplefilter("ignore")
+                    init()
                     simplefilter("default")
                     self.get_cur_brightness_per = iokit["IODisplayGetFloatParameter"](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()),
                                                                                       1,
                                                                                       iokit["kDisplayBrightness"], None)
 
+     
                def set_brightness(self, brightness_percent: [int, float]):
                     """
                  Automatically set brightness
@@ -950,30 +959,24 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
           class Clicker(object):
                """Click keys"""
 
-               def press(self, key):
+               def press(self, key, hotkey: bool):
                     """Press key via >>> AppKit"""
                     try:
-                         key = KeyHexType[key]
+                         if hotkey:
+                              try:
+                                   key = KeyHexType[key]
+                              except KeyError:
+                                   raise KeyError(f'No special key named {repr(key)}')
+                         else:
+                              key += key[0]
                     except KeyError:
                          raise ValueError(
                               f'Method {repr(self.press.__name__)} support only 1 letter. Use {repr(self.write.__name__)}.')
 
-                    ev = AppKit.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
-                         14,
-                         (0, 0),  # location
-                         0xa00,  # flags
-                         0,
-                         0,
-                         0,
-                         8,
-                         ((key - 128) << 16) | (0xa << 8),
-                         -1
-                    )
-                    Quartz.CGEventPost(0, ev.CGEvent())
-
-                    event = Quartz.CGEventCreateKeyboardEvent(None, key, True)
-                    Quartz.CGEventSetFlags(event, 0)
-                    Quartz.CGEventPost(Quartz.kCGHIDEventTap, event)
+                    ev = Quartz.CGEventCreateKeyboardEvent(None,
+                                                           Quartz.CGEventTapLocation(key),
+                                                           Quartz.CGEventType(100))
+                    Quartz.CGEventPost(0, ev)
 
                def write(self, text):
                     """Write text"""
@@ -1128,11 +1131,12 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                                              '/System/Library/Sounds/Sosumi.aiff -v 10; done' % iters)
 
                def playSoundByName(self, soundfile):
+                    absolute_path = 'file:' + str(pathlib.Path(soundfile).cwd()) + str('/') + soundfile
+                    url = Foundation.NSURL.URLWithString_(
+                         absolute_path
+                         )
 
-                    url = Foundation.NSURL.URLthString_(
-                         'file:' + str(pathlib.Path(soundfile).cwd()) + str('/') + soundfile)
-
-                    self.duration_Start = AppKit.NSSound.alloc().initthContentsOfURL_byReference_(url, True)
+                    self.duration_Start = AppKit.NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
                     try:
                          self.duration_Start.play()
 
@@ -1402,6 +1406,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     """Return mouse position"""
                     return self.position[0], self.position[1]
 
+
           class Theme:
                def __init__(self):
                     self.cmd = 'osascript -e \'tell app "System Events" to tell appearance ' \
@@ -1412,11 +1417,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     subprocess.getoutput(cmd=self.cmd)
 
                def current_theme(self):
-                    if 'AppleInterfaceStyle' in subprocess.getoutput('defaults find AppleInterfaceStyle'):
+                    """Print current color mode on mac."""
+                    if not 'Dark' in subprocess.getoutput('defaults find AppleInterfaceStyle'):
                          return "Light"
-
-                    return subprocess.getoutput('defaults find AppleInterfaceStyle').split(": ")[-1].split()[:2:-1][
-                         -1].replace(r';', '')
+                    return subprocess.getoutput('defaults find AppleInterfaceStyle').split(": ")[-1].split()[:2:-1][-1].replace(r';', '')
 
           class Buffer:
                def copyText(self, text):
@@ -1484,6 +1488,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def set_backgroud(self, filename: str, image_bg_color='white'):
                     try:
+                         # If image open then:
                          Image.open(filename)
                     except Exception:
                          raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
@@ -1494,7 +1499,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.greenColor()
                          }
-                         
                     elif image_bg_color == 'red':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
@@ -1502,7 +1506,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.redColor()
                          }
-                         
                     elif image_bg_color == 'blue':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
@@ -1510,7 +1513,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blueColor()
                          }
-                         
                     elif image_bg_color == 'yellow':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1518,7 +1520,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.yellowColor()
                          }
-                         
                     elif image_bg_color == 'white':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1526,7 +1527,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.whiteColor()
                          }
-                         
                     elif image_bg_color == 'black':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
@@ -1534,7 +1534,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blackColor()
                          }
-                         
                     elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
                          raise RgbValueError(f'No color {image_bg_color} for background.')
 
