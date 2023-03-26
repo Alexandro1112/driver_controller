@@ -955,30 +955,21 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
           class Clicker(object):
                """Click keys"""
 
-               def press(self, key, hotkey: bool):
-                    """Press key via >>> AppKit"""
-                    import Quartz
-                    try:
-                         if hotkey:
-                              try:
-                                   key = KeyHexType[key]
-                              except KeyError:
-                                   raise KeyError(f'No special key named {repr(key)}')
-                         else:
-                              key = KeyHexType[key]
-                    except KeyError:
-                         raise ValueError(
-                              f'Method {repr(self.press.__name__)} support only 1 letter. Use {repr(self.write.__name__)}.')
-
-                    ev = Quartz.CGEventCreateKeyboardEvent(None,
-                                                           Quartz.CGEventTapLocation(key),
-                                                           Quartz.CGEventType(100))
-                    Quartz.CGEventPost(0, ev)
-
                def write(self, text):
                     """Write text"""
-                    for i in text:
-                         self.press(key=i, hotkey=False)
+
+                    import Quartz
+                    try:
+                         for i in text:
+                              i = KeyHexType[i.lower()]
+                              ev = Quartz.CGEventCreateKeyboardEvent(None,
+                                                                Quartz.CGEventTapLocation(i),
+                                                                Quartz.CGEventType(100))
+                              Quartz.CGEventPost(0, ev)
+
+                    except KeyError:
+                         raise ValueError(f'Can not write {text}.')
+
 
                def press_hot_key(self, key):
                     import Quartz
@@ -1014,10 +1005,13 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     DEFAULT BROWSER: Safari.
                     :param url: 'url'
                     :return: None
-                    :param url: 
-                    :return: 
-                    """  # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
-                    cmd = f'open /Applications/{browser}.app {url}'  # Select your main browser
+                    :param url:
+                    :return:
+                    """
+                    # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
+                    cmd = f'open /Applications/{browser}.app {url}' # Select your main browser
+                    if subprocess.getstatusoutput(cmd=cmd)[0] == 1:
+                         raise ApplicationNameError(f'Can not open url in application {browser}')
                     return subprocess.getoutput(cmd=cmd)
 
                def open_spotlight(self):
@@ -1025,14 +1019,13 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     MacCmd().Mouse().move_click(1212, 13)
 
                def open_file(self, path):
-                    AppKit.NSWorkspace.sharedWorkspace().openFile_(
-                         path)
+                    AppKit.NSWorkspace.sharedWorkspace().openFile_(path)
 
                def open_file_in_app(self, app_name, file):
                     open_objc = AppKit.NSWorkspace.sharedWorkspace().openFile_withApplication_(file, app_name)
 
                     if open_objc is False:
-                         raise OpenPossibilityError \
+                         raise OpenPossibilityError\
                               (f'Can not open file {file}, because application {app_name} not support format this files.')
 
           class Sound(object):
@@ -1151,7 +1144,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          sleep(float(duration_Start.duration()))
 
                     except AttributeError:
-                         raise PathError(f'No sound name {url}, or it not support')
+                         raise PathError(f'No sound name {url}, or it not support.')
 
                def sound_length(self, file):
                     return mutagen.mp3.MP3(file).info.length
@@ -1356,7 +1349,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def __init__(self):
                     try:
                          location = AppKit.NSEvent.mouseLocation()
-                         self.position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - round(location.y)))
+                         self.position = (round(location.x), round(int(Quartz.CGDisplayPixelsHigh(0)) - round(location.y)))
 
                     except AttributeError:
                         return
