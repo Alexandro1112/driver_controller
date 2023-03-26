@@ -124,15 +124,14 @@ driver_controller.MacCmd().Clicker().write(text='hello')
 ``` 
 ![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png)      
 # Set brightness of screen.
-* You must install brew and brightness.  
-* Use increase/dicrease brightness if homebrew and "birghtness" is not install.
+
      
 ``` 
 
 import driver_controller._mac_engine
 
 br = driver_controller._mac_engine.MacCmd().Brightness()
-br.set_birghtness(20) # Set birghtness
+br.set_birghtness(0.20) # Set birghtness
 br.increase_brightness(3) # increase brightness by 3 division 
 
 br.decrease_brightness(3) # decrease brightness by 3 division 
@@ -332,7 +331,15 @@ dr.MacCmd().Buffer().copyText('Copied text!')
 # Command+C -> Copied text!
 ```
 
+![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+# Write something via keyboard. Maybe write 1 letter, write more 1 letter, click on hot keys.
 
+```
+import driver_controller
+MouseInit = driver_controller.MacCmd().Clicker()
+MouseInit.press_hot_key('enter')  # Print key enter
+MouseInit.write('Hello world!!')
+```
 
 <h1> That was main methods this python library. Exist even linux version. windows, while there less possibilities.<h1>
 
