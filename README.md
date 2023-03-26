@@ -1,7 +1,7 @@
 <img style="display: block; align-items: center; justify-content: center; width: 365px; height: 355px;" src='https://github.com/Alexandro1112/driver_controller/blob/main/45dd60cb7ef14bd4bfeb4c9061919e67.png'>
 
 
-![#c5f015](https://placehold.co/15x20/c5f015/c5f015.png)<br>
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 <img src='https://shields.io/badge/-Tested:%20Windows%2010-green'>
 <img src='https://shields.io/badge/-Tested:%20Mac%20os%20Big Sur(+)11.7.4-green'>
 <img src='https://shields.io/badge/-Tested:%20Mac%20os%20Catalina(+)10.15.7-green'><br>
@@ -22,7 +22,7 @@ In the github repository local submodules, install them - not need.However code 
     
 <h3>After, import them. Explore main opportunities this library. <h3>
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 
 # Lets try outputting all bluetooth/microphones in python.
 
@@ -32,7 +32,7 @@ import driver_controller
 print(driver_controller.OutputListsDevises().get_list_audio_devises(), driver_controller.OutputListsDevises().get_list_bluetooth_devises())
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Thats nice, Trying get data about wifi, and connect/disconnect to them.
 
 ```
@@ -93,7 +93,7 @@ print(driver_controller._mac_engine.MacCmd().Wifi().InfoNetwork())
 }, ipv6GlobalSetup=(null)]'''
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Create message...
 
 <h4> Make Lateral message with:<br>
@@ -112,17 +112,9 @@ driver_controller.MacCmd().Notifier().send_lateral_message(label='<YOUR_LABEL>',
                                                      text='<TEXT>', file_icon='<FILE_ICON>',
                                                      sound=driver_controller.CONSTANT_SOUNDS.SOUND_POP_SOUND)
 ``` 
+   
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png)     
-# is it possible to automotize keystrokes?Yes, you can even write the word.
-
-``` 
-import driver_controller
-
-driver_controller.MacCmd().Clicker().press(key='a')
-driver_controller.MacCmd().Clicker().write(text='hello')
-``` 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png)      
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>     
 # Set brightness of screen.
 
      
@@ -143,7 +135,7 @@ br.set_min_brightness()
 
 ``` 
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br> 
 # Enable/unplug wifi/bluetooth.
 ``` 
      
@@ -155,7 +147,7 @@ print(driver_controller.MacCmd().Switching().enable_wifi(),
       driver_controller.MacCmd().Switching().unplug_bluetooth())
 ``` 
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Try make Screenshot.
   
 
@@ -164,7 +156,7 @@ import driver_controller
 
 print(driver_controller.MacCmd().ScreenCapture().screenshot(filename='screenshot', extension='jpg', pause=2))
 ``` 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 #  Create photo in your webcamera.
 <h4> Method make image trough web-camera
      cam_index: index where local camera
@@ -181,7 +173,7 @@ driver_controller.MacCmd().PhotoCapture().capture(cam_index=0,
                                             extension='<FILE_EXTENSION>')
 ``` 
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Get some info about your noutbook
 ``` 
 from driver_controller import MacCmd
@@ -193,7 +185,7 @@ print(MacCmd().SystemConfig().get_processor_name,# Intel(R) Core(TM) i7-4850HQ C
      MacCmd(). SystemConfig().devise_battery)# Battery percent: 90%
 ``` 
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Stream video from webcamera .
 > record_time : time of recording(seconds)
 > camera_index: camera index
@@ -206,14 +198,15 @@ from driver_controller import MacCmd
 MacCmd().WebCameraCapture.webcam_capture(record_time=20, camera_index=0, filename='Out-Video', extension='mkv')
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Play sounds, available in mac-os
 ```
 from driver_controller import MacCmd
 
 Sound.pop_sound(iters=1),     MacCmd().Sound.ping_sound(iters=1),     MacCmd().Sound.blow_sound(iters=1),      MacCmd().Sound.funk_sound(iters=1),      MacCmd().Sound.glass_sound(iters=1),     MacCmd().Sound.sosumi_sound(iters=1),     MacCmd().Sound.submarine_sound(iters=1)
 ```
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Practical application
 <p>Write code for check clicked determined button in alert.
 
@@ -226,7 +219,7 @@ else:
      print('Ok!')
 
 ```
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br> 
 # Set volume with input , get volume percent and etc.
 
 ```
@@ -244,7 +237,7 @@ vol.set_min_volume()
 vol.set_max_volume()
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br> 
 # Change Mac theme.
 
 ```
@@ -253,7 +246,7 @@ import driver_controller._mac_engine
 driver_controller._mac_engine.MacCmd().Theme().change_color_mode(pause=1)# Change color mode for Mac.
 
 ```
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Open something url. Second argument - browser,and Link.Also we can open spotlight, and application.
 
 ```
@@ -268,7 +261,7 @@ driver_controller._mac_engine.MacCmd().Open().open_spotlight()# Entry menu
 
 channel = driver_controller._mac_engine.MacCmd().Open().application('FaceTime')
 ```
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Play sound by name using:
 
 ```
@@ -279,7 +272,7 @@ sound = driver_controller._mac_engine.MacCmd().Sound()
 sound.playSoundByName(soundfile='yoursound.mp3')# sound name 
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Is support Mouse? Of course. Move, Click, get possition automatically.
 
 ```
@@ -294,7 +287,7 @@ mouse.mouse_move(1300, 300) # Move mouse in position x=1300, y=300
 
 mouse.move_click(600, 70) # Move, and click in position x=600, y=70
 ```
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Get some data about applications
 ```
 import driver_controller._mac_engine
@@ -306,7 +299,7 @@ print(size, ',', path, ',', d)
 # 295M , /Applications/Safari.app , Thu Dec  5 22:30:38 2019
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Just setup illumination.
 
 ```
@@ -320,7 +313,7 @@ for i in range(3):
     # Decrease illumination from keys.
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Working with buffer.
 
 ```
@@ -331,7 +324,7 @@ dr.MacCmd().Buffer().copyText('Copied text!')
 # Command+C -> Copied text!
 ```
 
-![#c5f015](https://placehold.co/15x15/c5f015/c5f015.png) 
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Write something via keyboard. Maybe write 1 letter, write more 1 letter, click on hot keys.
 
 ```
