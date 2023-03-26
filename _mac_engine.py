@@ -474,7 +474,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     try:
                          brightness_error = iokit["IODisplaySetFloatParameter"](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()),
-                                                                                1,iokit["kDisplayBrightness"], brightness_percent)
+                                                                                1, iokit["kDisplayBrightness"], brightness_percent)
                          please()
                          if brightness_error != 0:
                              raise Exception('Error code = {}'.format(brightness_error))
@@ -988,7 +988,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def application(self, application_name):
                     """
                  Open application by his name.
-                 :param path_app: Path to Application
+                 :param application_name: Path to Application
                  (begin from /Applications/{path_app}.app)
                  EXAMPLE [/Applications/Finder.app]
                  :return: Successful if successful opened app.
@@ -1486,62 +1486,74 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     doKey(False)
 
           class BackGroundScreen:
+               def current_background_image(self):
+                    Id = Quartz.NSScreen.mainScreen()
+                    boolean = AppKit.NSWorkspace.sharedWorkspace().desktopImageURLForScreen_(Id)
+                    return boolean
 
-               def set_backgroud(self, filename: str, image_bg_color='white'):
+               def set_backgroud(self, filename: str, stretch_img_by_screen_size: bool, image_bg_color='white', ):
                     try:
                          # If image open then:
                          Image.open(filename)
                     except Exception:
                          raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
+
+
                     if image_bg_color == 'green':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
+                                                                                           not True else AppKit.YES,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.greenColor()
                          }
                     elif image_bg_color == 'red':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size
+                                                                                           is not True else AppKit.YES,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.redColor()
                          }
                     elif image_bg_color == 'blue':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
+                                                                                           not True else AppKit.YES,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blueColor()
                          }
                     elif image_bg_color == 'yellow':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
+                                                                                           not True else AppKit.YES,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.yellowColor()
                          }
                     elif image_bg_color == 'white':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
+                                                                                           not True else AppKit.YES,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.whiteColor()
                          }
                     elif image_bg_color == 'black':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
+                                                                                           True else AppKit.YES,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blackColor()
                          }
                     elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
                          raise RgbValueError(f'No color {image_bg_color} for background.')
 
                     ws__ = AppKit.NSWorkspace.sharedWorkspace()
-                    for screen in AppKit.NSScreen.screens():
+                    for screens in AppKit.NSScreen.screens():
                          ws__.setDesktopImageURL_forScreen_options_error_(
-                              file_url, screen, config, None)
+                              file_url, screens, config, None)
 
 
 else:
