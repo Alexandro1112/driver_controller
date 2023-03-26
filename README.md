@@ -11,15 +11,21 @@
 [![Platforms MacOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](http://www.apple.com/macos)<br>
 [![Platforms LinuxOS](https://img.shields.io/badge/Platforms-macOS-lightgray.svg?style=flat)](https://www.linux.org/pages/download/)
 <img src='https://shields.io/badge/-MIT%20Lisence-gold'>
-<p><strong>DRIVER_CONTROLLER<strong><p>
 
-This lib will help you change system settings such as brightness, volume, color- mode, control your mouse,send notification,open windows, outputing available gadgets , connecting to wifi-network, enable/disable bluetooth device.You can use this utility for your python project.
-In the github repository local submodules, install them - not need.However code not working - install them, run script
+<h1 style="font-family: Arial" align="center" >Mac-OS Documentation<h1>
+
+<p align="center" >DRIVER_CONTROLLER<p>
+
+<h2 align="center" >This lib will help you change system settings such as brightness, volume, color- mode, control your mouse,send notification,open windows, outputing available gadgets , connecting to wifi-network, enable/disable bluetooth device, collect data from devises.You can use this utility for your python project.In the github repository local submodules, install them - not need.However code not working - install them, run script<h2>
+
 > install_depindensies.sh
-# Installation
+
+<h2> Installation. Only trough github. <h2> 
+
 > git clone https://github.com/Alexandro1112/driver_controller
 
-    
+
+
 <h3>After, import them. Explore main opportunities this library. <h3>
 
 ![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
@@ -174,15 +180,27 @@ driver_controller.MacCmd().PhotoCapture().capture(cam_index=0,
 ``` 
 
 ![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
-# Get some info about your noutbook
+# Get a lot of info about your noutbook
 ``` 
 from driver_controller import MacCmd
 
-print(MacCmd().SystemConfig().get_processor_name,# Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz
-      MacCmd().SystemConfig().current_connected_wifi_network,# Gavrilova_60_87_2.4ghz
-      MacCmd().SystemConfig().screen_size,# ['2880', 'x', '1800']
-      MacCmd().SystemConfig().macos_version,# Version your Mac os devise: 10.15.7
-     MacCmd(). SystemConfig().devise_battery)# Battery percent: 90%
+print(MacCmd(). SystemConfig().get_processor_name,  # Intel(R) Core(TM) i7-4850HQ CPU @ 2.30GHz
+      MacCmd(). SystemConfig().current_connected_wifi_network,  # Gavrilova_60_87_2.4ghz
+      MacCmd(). SystemConfig().screen_size,  # ['2880', 'x', '1800']
+      MacCmd(). SystemConfig().macos_version,  # Version your Mac os devise: 10.15.7
+      MacCmd(). SystemConfig().devise_battery,  # Battery percent: 90%
+      MacCmd(). SystemConfig().mac_address(),  # XX:XX:XX:XX:XX:XX
+      MacCmd(). SystemConfig().mac_location(),  # (45.XXXXXXXXXXXXXX, 38.XXXXXXXXXXXXXX)
+      MacCmd(). SystemConfig().darwin_version,  # x86_64-apple-darwin20.6.0
+      MacCmd(). SystemConfig().sensor_temperature(),  # 94
+      MacCmd(). SystemConfig().get_disk_memory,  # 500.3Gb
+      MacCmd(). SystemConfig().memory_size,  # 16.0
+      MacCmd(). SystemConfig().mac_name,  # admin
+      MacCmd(). SystemConfig().get_video_card_name,  # NVIDIA GeForce GT 750M
+      MacCmd(). SystemConfig().get_mac_serial_number,  # <SERIAL-NUMBER> 
+
+      )
+
 ``` 
 
 ![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
@@ -332,6 +350,46 @@ import driver_controller
 MouseInit = driver_controller.MacCmd().Clicker()
 MouseInit.press_hot_key('enter')  # Print key enter
 MouseInit.write('Hello world!!')
+```
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
+# You can use class ``BackGroundScreen`` for setup background screen
+```
+import driver_controller
+
+current_img = driver_controller.MacCmd().BackGroundScreen().current_background_image()
+print(current_img)
+
+driver_controller.MacCmd().BackGroundScreen().set_backgroud(filename='file:/System/Library/Desktop\ Pictures/Dome.heic',
+                                                            stretch_img_by_screen_size=False,  # Param tied with stretch of image.
+                                                            image_bg_color='black')
+```
+
+<h1 style="font-family: Arial" align="center" >Windows Documentation<h1>
+<h2 align="center" >For windows no has dependencies. Just run code.<h2>
+
+![#c5f015](https://placehold.co/1500x20/ff0000/ff0000.png)<br>
+# Send notification with:
+
+> Label
+> Text
+> Icon
+
+```
+import driver_controller
+
+current_img = driver_controller.WindowsCmd().Notifier().send_text_message(
+                                                                 label='New alert!',
+                                                                 text='Thanks for using driver-controller',
+                                                                 icon='stop')  # Specify STOP, WARNING, or QUESTION
+```
+
+![#c5f015](https://placehold.co/1500x20/ff0000/ff0000.png)<br>
+# Or setup brightness:
+
+```
+import driver_controller
+
+driver_controller.WindowsCmd().Brightness().set_brightness(0.4)
 ```
 
 <h1> That was main methods this python library. Exist even linux version. windows, while there less possibilities.<h1>
