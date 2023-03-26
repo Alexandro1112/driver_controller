@@ -1,9 +1,11 @@
 # /opt/anaconda3/bin/python
-# Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.
-# The library is designed for Mac-OS, performs technical
-# functions such as disabling Wi-Fi, Bluetooth, sends ,
-# notifications: text, sound, recording audio, working with screen brightness,
-# control devises and much more.Soon be cross-platform.
+###############################################################################
+# Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.               #
+# The library is designed for Mac-OS, performs technical                      # 
+# functions such as disabling Wi-Fi, Bluetooth, sends ,                       #
+# notifications: text, sound, recording audio, working with screen brightness,#
+# control devises and much more.Soon be cross-platform.                       #
+###############################################################################
 # |---------------------------------------------------------------------------------------------------------------------|
 #                                                   ||PYTHON-INSTALLATION||
 # If you cloned this repository trough github,
@@ -1496,7 +1498,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          # If image open then:
                          Image.open(filename)
                     except Exception:
-                         raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
+                         raise UnsupportedFormat(f'Image not support format {repr(str(filename).split(".")[-1])}.')
 
 
                     if image_bg_color == 'green':
@@ -1560,4 +1562,4 @@ else:
      raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
 if __name__ == '__main__':
-     exit('Welcome to driver_controller!')
+    exit('Welcome to driver_controller!')
