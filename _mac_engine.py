@@ -39,10 +39,10 @@
 # TESTED BY Mac Os Big Sur 11.4.7(+), Mac os Catalina(+) 10.15.7, Mac Os High Mojave(confirm osascript) 10.13
 # TODO: Make more classes
 #                                            Finally, run code.
-import typing
+
 import warnings
 
-import js2py
+
 import mutagen.mp3
 # Os
 import os
@@ -96,8 +96,6 @@ try:
      # for get list applications
      from psutil import process_iter
 
-     # Log-alerts
-     from loger import *
      # Sound-devises
      from sounddevice import query_devices
      # Screen size
@@ -105,8 +103,9 @@ try:
 
      import CoreWLAN
 
-     # For collecting data in system files
+     # Session beetwen bridge objcetive-c
      from objc._framework import infoForFramework
+     import objc
      import objc._objc
 
      import CoreFoundation
@@ -139,8 +138,8 @@ def init():
                   ("IODisplayGetIntegerRangeParameter", b'I'),
                   ('IORegistryEntryCreateCFProperties', b'IIo^@@I'),
                   ('IOPSCopyPowerSourcesByType', b'@I'),
-                  ('IOPSCopyPowerSourcesInfo', b'@'),
                   ('IODisplaySetFloatParameter', b'iII@f'),
+                  ("IOHIDGetActivityState", b'IBi')
                   ]
 
 
@@ -164,10 +163,8 @@ def init():
        if key in globals():
            iokit[key] = globals()[key]
 
-
      iokit["kDisplayBrightness"] = CoreFoundation.CFSTR("brightness")
      iokit["kDisplayUnderscan"] = CoreFoundation.CFSTR("pscn")
-
 
 
 if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and \
@@ -252,6 +249,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                """Connect to wi-fi networks/ Data about wifi."""
 
                def __init__(self):
+                    import CoreWLAN
                     self.interface = CoreWLAN.CWInterface.interfaceWithName_("en0")
 
                     self.speed = subprocess.getoutput(cmd='airport -I | grep maxRate')
@@ -349,9 +347,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     return self.secT.split(':')[-1]
 
                def get_info(self, ssid):
-                    return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid,
-                                                                                                             None)).split(
-                         '[')[1].split(', ')[:4]
+                    return str(CoreWLAN.CWInterface.interfaceWithName_("en0").scanForNetworksWithName_error_(ssid, None)).split('[')[1].split(', ')[:4]
 
                def GetCounrtyCodeByCurrentWifi(self):
                     return self.interface.countryCodeInternal()
@@ -453,12 +449,15 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     global iokit
                     simplefilter("ignore")
                     init()
+                    iokit = dict(iokit)
                     simplefilter("default")
+                    self.s = iokit['IOHIDGetActivityState'](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()), 1
+                                                            )
                     self.get_cur_brightness_per = iokit["IODisplayGetFloatParameter"](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()),
                                                                                       1,
                                                                                       iokit["kDisplayBrightness"], None)
 
-     
+
                def set_brightness(self, brightness_percent: [int, float]):
                     """
                  Automatically set brightness
@@ -539,13 +538,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                """Data about mac"""
 
                def __init__(self):
-                    self.percent = list(IOPSCopyPowerSourcesByType(0))[0]['Current Capacity']  # ignore: noqa 401
+                    self.percent = list(iokit['IOPSCopyPowerSourcesByType'](0))[0]['Current Capacity']  # ignore: noqa 401
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
                     self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
-                    self.size = \
-                    subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[
-                         1].split(' ')
-
+                    self.size = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
                     del self.size[0], self.size[-1]
@@ -829,7 +825,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          """
                          [Format unsupported]
                          """
-                         log('Unsupported format', level=3)
+
                          raise UnsupportedFormat(
                               "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
 
@@ -961,6 +957,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def press(self, key, hotkey: bool):
                     """Press key via >>> AppKit"""
+                    import Quartz
                     try:
                          if hotkey:
                               try:
@@ -968,7 +965,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                               except KeyError:
                                    raise KeyError(f'No special key named {repr(key)}')
                          else:
-                              key += key[0]
+                              key = KeyHexType[key]
                     except KeyError:
                          raise ValueError(
                               f'Method {repr(self.press.__name__)} support only 1 letter. Use {repr(self.write.__name__)}.')
@@ -981,7 +978,19 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def write(self, text):
                     """Write text"""
                     for i in text:
-                         self.press(key=i)
+                         self.press(key=i, hotkey=False)
+
+               def press_hot_key(self, key):
+                    import Quartz
+                    if len(key) > 1:
+                         try:
+                              key = KeyHexType[key]
+                              ev = Quartz.CGEventCreateKeyboardEvent(None,
+                                                                     Quartz.CGEventTapLocation(key),
+                                                                     Quartz.CGEventType(100))
+                              Quartz.CGEventPost(Quartz.kCGHIDEventTap, ev)
+                         except KeyError:
+                             raise KeyError('Can not find hot key named {}'.format(repr(key)))
 
           class Open(object):
 
@@ -1131,19 +1140,18 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                                              '/System/Library/Sounds/Sosumi.aiff -v 10; done' % iters)
 
                def playSoundByName(self, soundfile):
-                    absolute_path = 'file:' + str(pathlib.Path(soundfile).cwd()) + str('/') + soundfile
+                    absolute_path =  str(pathlib.Path(soundfile).cwd()) + str('/') + soundfile
                     url = Foundation.NSURL.URLWithString_(
                          absolute_path
                          )
 
-                    self.duration_Start = AppKit.NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
+                    duration_Start = AppKit.NSSound.alloc().initWithContentsOfURL_byReference_(url, True)
                     try:
-                         self.duration_Start.play()
-
-                         sleep(float(self.duration_Start.duration()))
+                         duration_Start.play()
+                         sleep(float(duration_Start.duration()))
 
                     except AttributeError:
-                         raise PathError(f'No sound name {soundfile}, or it not support')
+                         raise PathError(f'No sound name {url}, or it not support')
 
                def sound_length(self, file):
                     return mutagen.mp3.MP3(file).info.length
@@ -1468,14 +1476,14 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          DECODE_TO_INT_KEY_F5 = 22
 
                          ev = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
-                              NSSystemDefined,  # type
-                              (0, 0),  # location
-                              0xa00 if down else 0xb00,  # flags
+                              NSSystemDefined,# Key in int type.(it is 0x78)
+                              (0, 0), 
+                              0xa00 if down else 0xb00, 
                               0,  # timestamp
                               0,  # window
                               0,  # ctx
                               8,  # subtype
-                              (DECODE_TO_INT_KEY_F5 << 16) | ((0xa if down else 0xb) << 8),  # data1
+                              (DECODE_TO_INT_KEY_F5 << 16) | ((0xa if down else 0xb) << 8), 
                               -1  # data2
                          )
                          cev = ev.CGEvent()
