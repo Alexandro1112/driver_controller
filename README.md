@@ -330,6 +330,13 @@ for i in range(3):
     dr.MacCmd().Illumination().decrease_illumination()
     # Decrease illumination from keys.
 ```
+![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
+# Maybe just pair to bluetooth devise.
+```
+import driver_controller._mac_engine as MD
+Addresses = list(MD.MacCmd().BlueTooth().get_all_address())[2]  # Connect to third available bluetooth devise by address 
+MD.MacCmd().BlueTooth().pair_to_devise(Addresses, 20)
+```
 
 ![#c5f015](https://placehold.co/1500x20/c5f015/c5f015.png)<br>
 # Working with buffer.
