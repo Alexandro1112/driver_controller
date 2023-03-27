@@ -1,11 +1,9 @@
 # /opt/anaconda3/bin/python
-###############################################################################
-# Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.               #
-# The library is designed for Mac-OS, performs technical                      # 
-# functions such as disabling Wi-Fi, Bluetooth, sends ,                       #
-# notifications: text, sound, recording audio, working with screen brightness,#
-# control devises and much more.Soon be cross-platform.                       #
-###############################################################################
+# Copyright (c) 2022-2023 Aleksandr Bosov. All rights reserved.
+# The library is designed for Mac-OS, performs technical
+# functions such as disabling Wi-Fi, Bluetooth, sends ,
+# notifications: text, sound, recording audio, working with screen brightness,
+# control devises and much more.Soon be cross-platform.
 # |---------------------------------------------------------------------------------------------------------------------|
 #                                                   ||PYTHON-INSTALLATION||
 # If you cloned this repository trough github,
@@ -247,6 +245,35 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     return self.devises
 
+          class BlueTooth(object):
+               def __init__(self):
+                    self.bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
+                    objc._objc.loadBundle('IOBluetooth', globals(),
+                                          bundle_path=u'/System/Library/Frameworks/IOBluetooth.framework')
+                    devices = IOBluetoothDevice  # Ignore error.IOBluetoothDevice not objective-class,
+                                                                   # and when i packing him in objc.loadBundle i
+                                                                   # got error, tied with subcridiable.
+                    address = devices.recentDevices_(0)
+
+                    for Query_Devises in address:
+                         self.device = Query_Devises
+
+               def get_paired_devices(self):
+                    return (self.device.getNameOrAddress())
+
+               def get_all_address(self):
+                    """[0] or [1]"""
+                    ADDRESID = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType | grep Address').split('Address')[1:]
+                    ADDRESID = set(ADDRESID)
+                    for ID in ADDRESID:
+                         yield ID.rstrip().replace(':', '').lstrip()
+               def pair_to_devise(self, address, duration_pair):
+                    try:
+                         device = IOBluetoothDevice.withAddressString_(address)
+                         device.openConnection()
+                         device.openConnection_withPageTimeout_authenticationRequired_(None, duration_pair, False)
+                    except AttributeError:
+                         raise BluetoothConnectionError(f'Can not connect to devise, with address {repr(address)}')
           class Wifi(object):
                """Connect to wi-fi networks/ Data about wifi."""
 
@@ -476,7 +503,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     try:
                          brightness_error = iokit["IODisplaySetFloatParameter"](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()),
-                                                                                1, iokit["kDisplayBrightness"], brightness_percent)
+                                                                                1,iokit["kDisplayBrightness"], brightness_percent)
                          please()
                          if brightness_error != 0:
                              raise Exception('Error code = {}'.format(brightness_error))
@@ -538,11 +565,24 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
           class SystemConfig(object):
                """Data about mac"""
+               simplefilter('ignore')
+               init()
+               simplefilter("default")
+
+
 
                def __init__(self):
-                    self.percent = list(iokit['IOPSCopyPowerSourcesByType'](0))[0]['Current Capacity']  # ignore: noqa 401
+                    manager = CoreLocation.CLLocationManager.alloc().init()
+                    manager.delegate()
+                    manager.startUpdatingLocation()
+                    while CoreLocation.CLLocationManager.authorizationStatus() != 3 or manager.location() is None:
+                         sleep(0.01)
+                    coord = manager.location().coordinate()
+                    self.lat = coord.latitude
+                    self.lon = coord.longitude
+                    self.percent = iokit['IOPSCopyPowerSourcesByType'](0)[0]['Current Capacity']  # ignore: noqa 401
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
-                    self.net = CoreWLAN.CWInterface.interfaceWithName_("en0").ssidData().decode('ascii')
+                    self.net = CoreWLAN.CWInterface.interfaceWithName_("en0")
                     self.size = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
@@ -582,7 +622,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                  (Available only on Mac-os)
                  """
 
-                    return self.net
+                    return self.net.ssidData().decode('ascii')
 
                @property
                def screen_size(self):
@@ -637,14 +677,9 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     System Preferences -> Security and Privacy -> allow geolocation services for python.
                     More info: https://howtoenable.net/how-to-enable-geolocation-on-mac/"""
 
-                    manager = CoreLocation.CLLocationManager.alloc().init()
-                    manager.delegate()
-                    manager.startUpdatingLocation()
-                    while CoreLocation.CLLocationManager.authorizationStatus() != 3 or manager.location() is None:
-                         sleep(1)
-                    coord = manager.location().coordinate()
-                    lat, lon = coord.latitude, coord.longitude
-                    return (lat, lon)
+                    return (self.lat, self.lon)
+
+
 
                def mac_address(self):
                     """Return mac address in format  XX:XX:XX:XX:XX:XX(not show him)"""
@@ -957,21 +992,30 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
           class Clicker(object):
                """Click keys"""
 
-               def write(self, text):
-                    """Write text"""
-
+               def press(self, key, hotkey: bool):
+                    """Press key via >>> AppKit"""
                     import Quartz
                     try:
-                         for i in text:
-                              i = KeyHexType[i.lower()]
-                              ev = Quartz.CGEventCreateKeyboardEvent(None,
-                                                                Quartz.CGEventTapLocation(i),
-                                                                Quartz.CGEventType(100))
-                              Quartz.CGEventPost(0, ev)
-
+                         if hotkey:
+                              try:
+                                   key = KeyHexType[key]
+                              except KeyError:
+                                   raise KeyError(f'No special key named {repr(key)}')
+                         else:
+                              key = KeyHexType[key]
                     except KeyError:
-                         raise ValueError(f'Can not write {text}.')
+                         raise ValueError(
+                              f'Method {repr(self.press.__name__)} support only 1 letter. Use {repr(self.write.__name__)}.')
 
+                    ev = Quartz.CGEventCreateKeyboardEvent(None,
+                                                           Quartz.CGEventTapLocation(key),
+                                                           Quartz.CGEventType(100))
+                    Quartz.CGEventPost(0, ev)
+
+               def write(self, text):
+                    """Write text"""
+                    for i in text:
+                         self.press(key=i, hotkey=False)
 
                def press_hot_key(self, key):
                     import Quartz
@@ -990,7 +1034,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def application(self, application_name):
                     """
                  Open application by his name.
-                 :param application_name: Path to Application
+                 :param path_app: Path to Application
                  (begin from /Applications/{path_app}.app)
                  EXAMPLE [/Applications/Finder.app]
                  :return: Successful if successful opened app.
@@ -1007,13 +1051,10 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     DEFAULT BROWSER: Safari.
                     :param url: 'url'
                     :return: None
-                    :param url:
-                    :return:
-                    """
-                    # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
-                    cmd = f'open /Applications/{browser}.app {url}' # Select your main browser
-                    if subprocess.getstatusoutput(cmd=cmd)[0] == 1:
-                         raise ApplicationNameError(f'Can not open url in application {browser}')
+                    :param url: 
+                    :return: 
+                    """  # SAFARI - DEFAULT MAIN BROWSER, CHANGE YOUR
+                    cmd = f'open /Applications/{browser}.app {url}'  # Select your main browser
                     return subprocess.getoutput(cmd=cmd)
 
                def open_spotlight(self):
@@ -1021,13 +1062,14 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     MacCmd().Mouse().move_click(1212, 13)
 
                def open_file(self, path):
-                    AppKit.NSWorkspace.sharedWorkspace().openFile_(path)
+                    AppKit.NSWorkspace.sharedWorkspace().openFile_(
+                         path)
 
                def open_file_in_app(self, app_name, file):
                     open_objc = AppKit.NSWorkspace.sharedWorkspace().openFile_withApplication_(file, app_name)
 
                     if open_objc is False:
-                         raise OpenPossibilityError\
+                         raise OpenPossibilityError \
                               (f'Can not open file {file}, because application {app_name} not support format this files.')
 
           class Sound(object):
@@ -1146,7 +1188,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          sleep(float(duration_Start.duration()))
 
                     except AttributeError:
-                         raise PathError(f'No sound name {url}, or it not support.')
+                         raise PathError(f'No sound name {url}, or it not support')
 
                def sound_length(self, file):
                     return mutagen.mp3.MP3(file).info.length
@@ -1351,7 +1393,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                def __init__(self):
                     try:
                          location = AppKit.NSEvent.mouseLocation()
-                         self.position = (round(location.x), round(int(Quartz.CGDisplayPixelsHigh(0)) - round(location.y)))
+                         self.position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - round(location.y)))
 
                     except AttributeError:
                         return
@@ -1471,14 +1513,14 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          DECODE_TO_INT_KEY_F5 = 22
 
                          ev = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
-                              NSSystemDefined,# Key in int type.(it is 0x78)
-                              (0, 0), 
-                              0xa00 if down else 0xb00, 
+                              NSSystemDefined,  # type
+                              (0, 0),  # location
+                              0xa00 if down else 0xb00,  # flags
                               0,  # timestamp
                               0,  # window
                               0,  # ctx
                               8,  # subtype
-                              (DECODE_TO_INT_KEY_F5 << 16) | ((0xa if down else 0xb) << 8), 
+                              (DECODE_TO_INT_KEY_F5 << 16) | ((0xa if down else 0xb) << 8),  # data1
                               -1  # data2
                          )
                          cev = ev.CGEvent()
@@ -1488,78 +1530,66 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     doKey(False)
 
           class BackGroundScreen:
-               def current_background_image(self):
-                    Id = Quartz.NSScreen.mainScreen()
-                    boolean = AppKit.NSWorkspace.sharedWorkspace().desktopImageURLForScreen_(Id)
-                    return boolean
 
-               def set_backgroud(self, filename: str, stretch_img_by_screen_size: bool, image_bg_color='white', ):
+               def set_backgroud(self, filename: str, image_bg_color='white'):
                     try:
                          # If image open then:
                          Image.open(filename)
                     except Exception:
-                         raise UnsupportedFormat(f'Image not support format {repr(str(filename).split(".")[-1])}.')
-
-
+                         raise UnsupportedFormat(f'Image not support format {repr(filename.split(".")[-1])}.')
                     if image_bg_color == 'green':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
-                                                                                           not True else AppKit.YES,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.greenColor()
                          }
                     elif image_bg_color == 'red':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size
-                                                                                           is not True else AppKit.YES,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.redColor()
                          }
                     elif image_bg_color == 'blue':
                          file_url = Foundation.NSURL.fileURLthPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
-                                                                                           not True else AppKit.YES,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blueColor()
                          }
                     elif image_bg_color == 'yellow':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
-                                                                                           not True else AppKit.YES,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.yellowColor()
                          }
                     elif image_bg_color == 'white':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
-                                                                                           not True else AppKit.YES,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.whiteColor()
                          }
                     elif image_bg_color == 'black':
                          file_url = Foundation.NSURL.fileURLWithPath_(filename)
                          config = {
                               AppKit.NSWorkspaceDesktopImageScalingKey: AppKit.NSImageScaleProportionallyUpOrDown,
-                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO if stretch_img_by_screen_size is
-                                                                                           True else AppKit.YES,
+                              AppKit.NSWorkspaceDesktopImageAllowClippingKey: AppKit.NO,
                               AppKit.NSWorkspaceDesktopImageFillColorKey: AppKit.NSColor.blackColor()
                          }
                     elif image_bg_color != (i for i in ('black', 'white', 'yellow', 'blue', 'red', 'green')):
                          raise RgbValueError(f'No color {image_bg_color} for background.')
 
                     ws__ = AppKit.NSWorkspace.sharedWorkspace()
-                    for screens in AppKit.NSScreen.screens():
+                    for screen in AppKit.NSScreen.screens():
                          ws__.setDesktopImageURL_forScreen_options_error_(
-                              file_url, screens, config, None)
+                              file_url, screen, config, None)
 
 
 else:
      raise SystemError('Use python version more [3.7] and mac version [10.9] an more.')
 
 if __name__ == '__main__':
-    exit('Welcome to driver_controller!')
+     exit('Welcome to driver_controller!')
