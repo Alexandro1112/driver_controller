@@ -86,4 +86,8 @@ class ScreenErrorIndex(IndexError):
 class ScreenWarning(Warning):
     """Not support bridge with objective-c and python via IOKit."""
 
+
+class BluetoothConnectionError(ConnectionRefusedError):
+    """Specify not right address to pair."""
+    
 # END FILE
