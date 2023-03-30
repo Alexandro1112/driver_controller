@@ -41,7 +41,7 @@
 # TESTED BY Mac Os Big Sur 11.4.7(+), Mac os Catalina(+) 10.15.7, Mac Os High Mojave(confirm osascript) 10.13
 # TODO: Make more classes
 #                                            Finally, run code.
-
+import ctypes
 import warnings
 
 
@@ -66,6 +66,8 @@ from time import (sleep, ctime)
 
 # Parse xml
 from xml.etree import ElementTree
+
+from CoreBluetooth import NSBundle, NSString
 
 # Constants
 from .CONSTANTS import KeyHexType
@@ -141,7 +143,9 @@ def init():
                   ('IORegistryEntryCreateCFProperties', b'IIo^@@I'),
                   ('IOPSCopyPowerSourcesByType', b'@I'),
                   ('IODisplaySetFloatParameter', b'iII@f'),
-                  ("IOHIDGetActivityState", b'IBi')
+                  ("IOHIDGetActivityState", b'IBi'),
+                  ('IODisplayCreateInfoDictionary', b'^{__CFDictionary=}II'),
+
                   ]
 
 
@@ -250,11 +254,14 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
           class BlueTooth(object):
                def __init__(self):
                     self.bluetooth = subprocess.getoutput(cmd='system_profiler SPBluetoothDataType')
-                    objc._objc.loadBundle('IOBluetooth', globals(),
+                    IOD = objc._objc.loadBundle('IOBluetooth', globals(),
                                           bundle_path=u'/System/Library/Frameworks/IOBluetooth.framework')
+                    objc._objc.loadBundleFunctions(IOD, globals(), [('IOBluetoothPreferenceGetControllerPowerState', b'oI'),
+                                                           ('IOBluetoothPreferenceSetControllerPowerState', b'vI'),
+                                                                    ('IOBluetoothDevicePair', b'B')])
                     devices = IOBluetoothDevice  # Ignore error.IOBluetoothDevice not objective-class,
-                                                                   # and when i packing him in objc.loadBundle i
-                                                                   # got error, tied with subcridiable.
+                                                 # and when I pack him in objc.loadBundle I
+                                                 # got error, tied with subcridiable.
                     address = devices.recentDevices_(0)
 
                     for Query_Devises in address:
@@ -262,6 +269,20 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                def get_paired_devices(self):
                     return (self.device.getNameOrAddress())
+
+               def isEnable(self):
+                     if IOBluetoothPreferenceGetControllerPowerState() != 0:
+                         return True
+                     return False
+
+               def set_bluetooth_by_enable(self):
+                    IOBluetoothPreferenceSetControllerPowerState(1)
+
+               def set_bluetooth_by_disable(self):
+                    IOBluetoothPreferenceSetControllerPowerState(0)
+
+
+
 
                def get_all_address(self):
                     """[0] or [1]"""
@@ -271,7 +292,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          yield ID.rstrip().replace(':', '').lstrip()
                def pair_to_devise(self, address, duration_pair):
                     try:
-                         device = IOBluetoothDevice.withAddressString_(address)
+                         device =  IOBluetoothDevice.withAddressString_(address)
                          device.openConnection()
                          device.openConnection_withPageTimeout_authenticationRequired_(None, duration_pair, False)
                     except AttributeError:
@@ -505,12 +526,12 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
 
                     try:
                          brightness_error = iokit["IODisplaySetFloatParameter"](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()),
-                                                                                1,iokit["kDisplayBrightness"], brightness_percent)
+                                                                                1, iokit["kDisplayBrightness"], brightness_percent)
                          please()
                          if brightness_error != 0:
                              raise Exception('Error code = {}'.format(brightness_error))
                          elif brightness_error == -536870201:
-                             raise ScreenErrorIndex( # 2077751737 - Main
+                             raise ScreenErrorIndex(  # 2077751737 - Main
                                    f'The screen index is incorrectly specified. use the default index -'
                                    f' {Quartz.CGMainDisplayID().__format__("-")}')
                          else:
@@ -571,8 +592,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                init()
                simplefilter("default")
 
-
-
                def __init__(self):
                     manager = CoreLocation.CLLocationManager.alloc().init()
                     manager.delegate()
@@ -585,11 +604,11 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     self.percent = iokit['IOPSCopyPowerSourcesByType'](0)[0]['Current Capacity']  # ignore: noqa 401
                     self.vers = subprocess.getoutput(cmd="sw_vers -productVersion")
                     self.net = CoreWLAN.CWInterface.interfaceWithName_("en0")
-                    self.size = subprocess.getoutput(cmd='system_profiler SPDisplaysDataType | grep Resolution').strip().split(":")[1].split(' ')
+                    self.size = iokit['IODisplayCreateInfoDictionary'](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()), 0)['resolution-preview-width']*10,\
+                         iokit['IODisplayCreateInfoDictionary'](Quartz.CGDisplayIOServicePort(Quartz.CGMainDisplayID()), 0)['resolution-preview-height']*10
                     self.mem_size = subprocess.getoutput(cmd='sysctl -a | grep \'^hw\.m\'')
                     self.processor = subprocess.getoutput(cmd='sysctl -n machdep.cpu.brand_string')
-                    del self.size[0], self.size[-1]
-                    self.num = 'system_profiler SPHardwareDataType | grep x"Serial Number (system)"'
+                    self.num = 'system_profiler SPHardwareDataType | grep x "Serial Number (system)"'
                     self.disk_mem = 'diskutil list | grep GUID_partition_scheme'  # Diskutil not found: https://superuser.com/questions/213088/diskutil-command-not-found-in-os-x-terminal
                     self.video_crd_nm = subprocess.getoutput(
                          cmd='system_profiler SPDisplaysDataType | grep "Chipset Model"')  # system profiler: command not found https://github.com/jlhonora/lsusb/issues/12?ysclid=ldu37f5jk9865312203
@@ -671,7 +690,7 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                @property
                def darwin_version(self):
                     if dar is None:
-                         return ""
+                        return ""
                     return dar.build_time_vars['BUILD_GNU_TYPE']
 
                def mac_location(self):
@@ -861,10 +880,6 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                          return 'Successful...'
 
                     else:
-                         """
-                         [Format unsupported]
-                         """
-
                          raise UnsupportedFormat(
                               "Method can make files only with extension ['png', 'jpg', 'icns', 'gif', 'pict']")
 
@@ -1531,13 +1546,13 @@ if sys.platform == 'darwin' and int(platform.mac_ver()[0].split('.')[0]) > 8 and
                     doKey(True)
                     doKey(False)
 
-           class BackGroundScreen:
+          class BackGroundScreen:
                def current_background_image(self):
                     Id = Quartz.NSScreen.mainScreen()
                     boolean = AppKit.NSWorkspace.sharedWorkspace().desktopImageURLForScreen_(Id)
                     return boolean
 
-               def set_backgroud(self, filename: str, stretch_img_by_screen_size: bool, image_bg_color='white', ):
+               def set_backgroud(self, filename: str, stretch_img_by_screen_size: bool, image_bg_color='white'):
                     try:
                          if image_bg_color == 'green':
                               file_url = Foundation.NSURL.fileURLthPath_(filename)
