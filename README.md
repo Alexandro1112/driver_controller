@@ -111,7 +111,7 @@ print(driver_controller._mac_engine.MacCmd().Wifi().InfoNetwork())
   subtitle: Subtitle of message<br>
   text: Description of message<br>
  :param file_icon: Icon in message (Path to image)<br>
- (must local in project-folder), Point out [None]<br>
+ (must locate in project-folder), Point out [None]<br>
  if you don't want used icon.<h4>
 
 ```
@@ -305,7 +305,8 @@ mouse = driver_controller._mac_engine.MacCmd().Mouse()
 
 mouse.mouse_click(200, 200) # Click in position x=200, y=200
 print(mouse.mouse_position) # Return mouse position (x,y)
-mouse.mouse_move(1300, 300) # Move mouse in position x=1300, y=300
+mouse.mouse_move(1300, 3
+600) # Move mouse in position x=1300, y=300
 
 mouse.move_click(600, 70) # Move, and click in position x=600, y=70
 ```
