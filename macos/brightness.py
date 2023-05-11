@@ -1,8 +1,11 @@
+import warnings
 from time import sleep
 from warnings import simplefilter
-import Quartz
-from .exceptions import *
+from .exceptions import ValueBrightnessError, ScreenWarning
 import subprocess
+import Foundation
+import Quartz
+from ColorSync import *
 
 
 class Brightness(object):
@@ -24,13 +27,7 @@ class Brightness(object):
      Automatically set brightness
      percent [type - float]
      example: 0.25; 0.50; 0.75; 0.1(max)
-     :param brightness_percent:
-     :return: Successfully.
-     P.s: will be show warning:
-     /Library/Frameworks/Python.framework/Versions/X.XX/lib/pythonX.XX/site-packages/objc/_bridgesupport.py
-     :666: RuntimeWarning: Error parsing BridgeSupport data for IOKit: Invalid array definition in type
-     signature: [255{ATASMARTLogEntry}}
-     warnings.warn(...). Ignore them.
+
      """
 
         success = Quartz.IKMonitorBrightnessController.alloc().setBrightnessOnAllDisplays_(brightness_percent)
@@ -82,5 +79,20 @@ class Brightness(object):
     def get_brightness(self):
         """Get brightness percent"""
         if self.get_cur_brightness_per[0] != 0:
-            raise ScreenWarning('Not support bridge objective-c and python via IOKit.')
+            raise ScreenWarning('No has access to IOKit and display ID.')
         return self.get_cur_brightness_per[-1]
+
+    def set_color_profile(self, profile_path):
+
+        graphics_path = f'file://{profile_path}'
+        display_uuid = CGDisplayCreateUUIDFromDisplayID(Quartz.CGMainDisplayID())
+        fullURL = Foundation.CFURLCreateWithString(objc.NULL, graphics_path, objc.NULL)
+        config_new = NSDictionary({kColorSyncDeviceDefaultProfileID: fullURL})
+        success = ColorSyncDeviceSetCustomProfiles(kColorSyncDisplayDeviceClass, display_uuid, config_new)
+        if not success:
+            raise ImportError(f'Can not import color profile named {profile_path}, or it not support.')
+
+    def get_color_profile(self):
+        display_uuid = CGDisplayCreateUUIDFromDisplayID(Quartz.CGMainDisplayID())
+        colorInfo = ColorSyncDeviceCopyDeviceInfo(kColorSyncDisplayDeviceClass, display_uuid)
+        return dict(dict(colorInfo['FactoryProfiles'])['1'])['DeviceProfileURL']
