@@ -1,44 +1,93 @@
+
+from AVFoundation import *
+from Cocoa import NSURL
+from time import sleep
 import time
-import AVFoundation
-import Foundation
 
+__all__ = ('WebCameraCapture')
 
-class AudioRecorder(object):
-    """Audio recorder"""
-
-    def __init__(self):
+class WebCameraCapture(object):
+    """Collect data in camera"""
+    def webcam_capture(self,  filename, camera_index):
         """
-     Make variable AVAILABLE_EXTENSIONS is global.
-     """
-        self.AVAILABLE_EXTENSIONS = (i for i in ('wav', 'mp3'))
+        Record video in webcam
+        :param record_time: Recording time(seconds)
+        :param filename: Name of created file
 
-    def recorder(self, microphone_index, extension, filename: str, record_time: int):
+        :return: [None]
         """
-     :param microphone_index: Microphone index
-     :param extension: Extension of creates file
-     :param filename: Name
-     :param record_time: Record time (format minutes)
-     :return:
-     """
 
-        length = record_time
-        AVFoundation.AVAudioFormat.alloc().initStandardFormatWithSampleRate_channels_(
-            44100.0, 1)  # 44100.0 NOT CHANGEABLE!!!!!!!!
-        audio_config = {
-            AVFoundation.AVEncoderAudioQualityKey: AVFoundation.AVAudioQualityLow,
-            AVFoundation.AVEncoderBitRateKey: 320000,  # TODO: add config as arg
-            AVFoundation.AVNumberOfChannelsKey: int(microphone_index),
-            AVFoundation.AVSampleRateKey: 44100.0
+        
+
+        session = AVCaptureSession.alloc().init()
+
+        device = AVCaptureDevice.devicesWithMediaType_(AVMediaTypeVideo)[camera_index]
+
+        input_ = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)[0]
+        session.addInput_(input_)
+        output_url = NSURL.fileURLWithPath_(filename)
+
+        video_settings = {
+            AVVideoWidthKey: 640,
+            AVVideoHeightKey: 180,
+            AVVideoCompressionPropertiesKey: {
+                AVVideoAverageBitRateKey: 10000000,
+                AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
+                AVVideoAllowFrameReorderingKey: kCFBooleanFalse
+            },
+            AVVideoColorPropertiesKey: {
+                AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+                AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+                AVVideoFieldMode: kCFBooleanTrue
+
+            }
         }
 
-        audio_recorder = AVFoundation.AVAudioRecorder.alloc().initWithURL_settings_error_(
-            Foundation.NSURL.fileURLWithPath_(f'{filename}.{extension}'), audio_config, None)
-        # Set default argument for none-valid specify.
+        output = AVCaptureMovieFileOutput.alloc().init()
+        session.addOutput_(output)
+        session.startRunning()
 
-        audio_recorder[0].record()
+        output.startRecordingToOutputFileURL_recordingDelegate_(output_url, CFDictionaryRef(video_settings))
 
-        time.sleep(length)
-        # Stop recording after pause ``length``
-        audio_recorder[0].stop()
 
-        audio_recorder[0].release()
+        output.stopRecording()
+        session.stopRunning()
+        return session
+
+    def webcamera_video_capture(self, filename, record_time, camera_index):
+        session = AVCaptureSession.alloc().init()
+        session.setSessionPreset_(AVCaptureSessionPresetHigh)
+
+        devices = AVCaptureDevice.devicesWithMediaType_(AVMediaTypeVideo)
+        device = devices[camera_index] if devices else None
+
+        input = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)[0]
+        output = AVCaptureMovieFileOutput.alloc().init()
+
+        if session.canAddInput_(input):
+            session.addInput_(input)
+        if session.canAddOutput_(output):
+            session.addOutput_(output)
+
+        session.startRunning()
+
+        file_url = NSURL.fileURLWithPath_(NSString.stringWithString_(filename))
+        output.startRecordingToOutputFileURL_recordingDelegate_(file_url, True)
+
+        sleep(record_time)
+
+        output.stopRecording()
+        session.stopRunning()
+
+    @property
+    def list_devises(self):
+        """
+        Return all available devises for recording audio/video.
+        :return: Devises
+        """
+
+        devices = AVCaptureDevice.devicesWithMediaType_('video')
+        list_devices = []
+        for device in devices:
+            list_devices.append(device.localizedName())
+            yield list_devices[-1]
