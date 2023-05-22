@@ -1,30 +1,83 @@
-import subprocess
-import os
+
+from AVFoundation import *
+from Cocoa import NSURL
+from time import sleep
+import time
+
+__all__ = ('WebCameraCapture', )
 
 class WebCameraCapture(object):
     """Collect data in camera"""
-
-    def __init__(self):
-        self.cmd = '/opt/local/bin/ffmpeg -f avfoundation -t %s -framerate 30 -i "%s" -target pal-vcd ./%s.%s'
-        self.devises = '[' + str(subprocess.getoutput(
-            cmd='/opt/local/bin/ffmpeg -f avfoundation -list_devices true -i ""').split('[', maxsplit=1)[
-                                     -1])
-
-    def webcam_capture(self, record_time: int, camera_index, filename, extension):
+    def webcam_capture(self,  filename, camera_index):
         """
         Record video in webcam
         :param record_time: Recording time(seconds)
-        :param camera_index: Camera index
         :param filename: Name of created file
-        :param extension: Extension of file
+
         :return: [None]
         """
 
-        subprocess.getoutput(cmd=self.cmd % (record_time, camera_index, filename, extension))
-        if os.path.isfile(f'{filename}.{extension}'):
-            raise FileExistsError(f'Please, rename file {filename}.{extension}, because it already exist.')
-        else:
-            return 'Check file is %s.%s' % (filename, extension)
+        
+
+        session = AVCaptureSession.alloc().init()
+
+        device = AVCaptureDevice.devicesWithMediaType_(AVMediaTypeVideo)[camera_index]
+
+        input_ = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)[0]
+        session.addInput_(input_)
+        output_url = NSURL.fileURLWithPath_(filename)
+
+        video_settings = {
+            AVVideoWidthKey: 640,
+            AVVideoHeightKey: 180,
+            AVVideoCompressionPropertiesKey: {
+                AVVideoAverageBitRateKey: 10000000,
+                AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
+                AVVideoAllowFrameReorderingKey: kCFBooleanFalse
+            },
+            AVVideoColorPropertiesKey: {
+                AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+                AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+                AVVideoFieldMode: kCFBooleanTrue
+
+            }
+        }
+
+        output = AVCaptureMovieFileOutput.alloc().init()
+        session.addOutput_(output)
+        session.startRunning()
+
+        output.startRecordingToOutputFileURL_recordingDelegate_(output_url, CFDictionaryRef(video_settings))
+
+
+        output.stopRecording()
+        session.stopRunning()
+        return session
+
+    def webcamera_video_capture(self, filename, record_time, camera_index):
+        session = AVCaptureSession.alloc().init()
+        session.setSessionPreset_(AVCaptureSessionPresetHigh)
+
+        devices = AVCaptureDevice.devicesWithMediaType_(AVMediaTypeVideo)
+        device = devices[camera_index] if devices else None
+
+        input = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)[0]
+        output = AVCaptureMovieFileOutput.alloc().init()
+
+        if session.canAddInput_(input):
+            session.addInput_(input)
+        if session.canAddOutput_(output):
+            session.addOutput_(output)
+
+        session.startRunning()
+
+        file_url = NSURL.fileURLWithPath_(NSString.stringWithString_(filename))
+        output.startRecordingToOutputFileURL_recordingDelegate_(file_url, True)
+
+        sleep(record_time)
+
+        output.stopRecording()
+        session.stopRunning()
 
     @property
     def list_devises(self):
@@ -33,4 +86,8 @@ class WebCameraCapture(object):
         :return: Devises
         """
 
-        return '[' + str(self.devises.strip().split('[', maxsplit=1)[-1].split(': ')[0])
+        devices = AVCaptureDevice.devicesWithMediaType_('video')
+        list_devices = []
+        for device in devices:
+            list_devices.append(device.localizedName())
+            yield list_devices[-1]
