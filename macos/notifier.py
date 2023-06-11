@@ -6,6 +6,7 @@ import pathlib
 class Notifier(object):
     """Send different alerts"""
     def send_text_alert(self, button, message, icon):
+        """Method is deprecated.Use other Alert manager PyMasl API.""""
         alert = AppKit.NSAlert.alloc().init()
         if isinstance(button, tuple):
             for i in button:
