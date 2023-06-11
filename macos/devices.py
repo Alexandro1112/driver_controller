@@ -1,30 +1,12 @@
 import subprocess
-from xml.etree.ElementTree import ElementTree
-from sounddevice import query_devices
+from AVFoundation import *
+
 import objc
 import CoreWLAN
 
 
 class OutputListsDevises(object):
     """ Return output devises """
-
-    def __init__(self):
-        self.bl, _ = subprocess.Popen(
-            "system_profiler -xml SPBluetoothDataType",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            close_fds=False
-        ).communicate()
-
-        last_text = None
-        cameras = []
-
-        for node in ElementTree.fromstring(self.bl).iterfind("./array/dict/array/dict/*"):
-            if last_text == "_name":
-                cameras.append(node.text)
-            last_text = node.text
-        self.devises = query_devices()
 
     def get_list_wifi_networks(self):
         """ Function output all wi-fi networks,
@@ -33,59 +15,40 @@ class OutputListsDevises(object):
             pass
         else:
             raise AttributeError
-
-        wifi = []
-        wifi2 = []
-
         bundle_path = '/System/Library/Frameworks/CoreWLAN.framework'
-
-        dir(objc._objc.loadBundle(objc.infoForFramework(bundle_path)[1], bundle_path=bundle_path,
-                                  module_globals=globals()))
+        objc._objc.loadBundle(objc.infoForFramework(bundle_path)[1], bundle_path=bundle_path,
+                                  module_globals=globals())
 
         response = CoreWLAN.CWInterface.interface()
         r = response.scanForNetworksWithName_includeHidden_error_(None, True, None)
-
-        for i in range(1, len(str(r).split('>')), 2):
-            wifi.append(str(r).split('>')[i].split(',')[0] + ']')
-
-        for items in wifi:
-            wifi2.append(items.strip().replace('ssid', '').replace('[', '').replace(']', '').replace('=',
-                                                                                                     '').strip())
-
-        yield set(sorted(wifi2))
+        for networks in r[0]:
+            yield networks.ssid()
 
     def get_list_bluetooth_device(self):
         """ Function output all bluetooth devise(s),
       which available for your devise."""
 
-        return self.bl
+        return None  # Not manage yet.
 
     def get_list_cameras(self):
-
-        self.resp, _ = subprocess.Popen(
-            "system_profiler -xml SPCameraDataType",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            close_fds=False
-        ).communicate()
-
-        last_text = None
-        cameras = []
-
-        for node in ElementTree.fromstring(self.resp).iterfind("./array/dict/array/dict/*"):
-            if last_text == "_name":
-                cameras.append(node.text)
-            last_text = node.text
-
-        return cameras
+        devices = AVCaptureDevice.devicesWithMediaType_('Video')
+        list_devices = []
+        for device in devices:
+            list_devices.append(device.localizedName())
+            yield list_devices[-1]
 
     def get_list_audio_devises(self):
         """
      Return all audio
      connectable devises.
      :return: devises
-     (Available only on Mac-os)
+
      """
 
-        return self.devises
+        devices = AVCaptureDevice.devicesWithMediaType_('Audio')
+        list_devices = []
+        for device in devices:
+            list_devices.append(device.localizedName())
+            yield list_devices[-1]
+
+
