@@ -24,15 +24,15 @@ class Volume(object):
         if subprocess.getstatusoutput(cmd=self.volume % volume)[0] == 1:
             raise ValueError
         else:
-            return 'Successful...'
+            return 0
 
     def set_max_volume(self):
         subprocess.getoutput(cmd=self.max_volume)
-        return 'Successful...'
+        return 0
 
     def set_min_volume(self):
         subprocess.getoutput(cmd=self.min_volume)
-        return 'Successful...'
+        return 0
 
     @property
     def get_output_volume_percent(self):
@@ -91,8 +91,8 @@ class Volume(object):
                 0,
                 0,
                 8,
-                (1 << 16) | ((0xa if down else 0xb) << 8),  # data1
-                -1  # data2
+                (1 << 16) | ((0xa if down else 0xb) << 8),  
+                -1  
             )
             cev = eventInit.CGEvent()
             Quartz.CGEventPost(0, cev)
