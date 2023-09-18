@@ -1,14 +1,5 @@
-# Examples.
-say -v Alex -i Hello!
-say -v Alice -i Hello!
-say -v Alva -i Hello!
-say -v Amelie -i Hello!
-say -v Anna -i Hello!
-say -v Fiona -i Hello!
-say -v Fred -i Hello!
-say -v Ioana -i Hello!
 
-# Voices for python code.
+# Voices for python funtions.
 
 """
 Agnes               en_US
