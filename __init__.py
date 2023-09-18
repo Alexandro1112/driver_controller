@@ -11,7 +11,7 @@ if platform == 'linux':
 
 elif platform == 'darwin':
 
-    from ._mac_engine import MacCmd
+    from ._mac_engine import MacCmd # The project frozen until unknown time from July 4 2023 - ???
 
 elif platform == 'win32':
 
