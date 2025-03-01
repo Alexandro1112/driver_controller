@@ -3,16 +3,7 @@
 Individual exceptions for driver_controller
 
 """
-'''
-print(Quartz.CGDisplayBestModeForParametersAndRefreshRate(Quartz.CGMainDisplayID(), 1,
-                                                          Quartz.CGDisplayPixelsWide(Quartz.CGMainDisplayID()),
-                                                          Quartz.CGDisplayPixelsHigh(Quartz.CGMainDisplayID()), 0,
-                                                          None))
-display, id = Quartz.CGBeginDisplayConfiguration(None)
-CGDisplaySetDisplayMode(Quartz.CGMainDisplayID(),    # noqa
-                         {Quartz.CGDisplayPixelsWide(800): 800,
-                          Quartz.CGDisplayPixelsHigh(800): 1000}, None)
-'''
+
 
 try:
     exc = ExceptionGroup
