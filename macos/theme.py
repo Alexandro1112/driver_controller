@@ -14,5 +14,4 @@ class Theme:
         """Print current color mode on mac."""
         if not 'Dark' in subprocess.getoutput('defaults find AppleInterfaceStyle'):
             return "Light"
-        return subprocess.getoutput('defaults find AppleInterfaceStyle').split(": ")[-1].split()[:2:-1][-1].replace(
-            r';', '')
+        return "Dark"
