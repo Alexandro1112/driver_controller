@@ -1,6 +1,6 @@
 import subprocess
 
-class Creator(object):
+class Creator:
     """Create something."""
 
     def create_file(self, name, extension):
@@ -10,10 +10,9 @@ class Creator(object):
         :param extension: Extension of created file
         :return: Successful.
         """
-        if name != '':
-            subprocess.getoutput(cmd=str('touch ') + str(name) + str('.') + str(extension))
-        else:
-            raise NameError from None
+        
+        subprocess.getoutput(cmd=str('touch ') + str(name) + str('.') + str(extension))
+        
 
     def create_folder(self, name):
         """
