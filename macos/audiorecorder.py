@@ -4,9 +4,9 @@ from Cocoa import NSURL
 from time import sleep
 import time
 
-__all__ = ('WebCameraCapture')
+__all__ = ('WebCameraCapture', )
 
-class WebCameraCapture(object):
+class WebCameraCapture:
     """Collect data in camera"""
     def webcam_capture(self,  filename, camera_index):
         """
@@ -23,15 +23,15 @@ class WebCameraCapture(object):
 
         device = AVCaptureDevice.devicesWithMediaType_(AVMediaTypeVideo)[camera_index]
 
-        input_ = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)[0]
-        session.addInput_(input_)
+        input, err = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)
+        session.addInput_(input)
         output_url = NSURL.fileURLWithPath_(filename)
 
         video_settings = {
             AVVideoWidthKey: 640,
             AVVideoHeightKey: 180,
             AVVideoCompressionPropertiesKey: {
-                AVVideoAverageBitRateKey: 10000000,
+                AVVideoAverageBitRateKey: 1000,
                 AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
                 AVVideoAllowFrameReorderingKey: kCFBooleanFalse
             },
@@ -49,7 +49,6 @@ class WebCameraCapture(object):
 
         output.startRecordingToOutputFileURL_recordingDelegate_(output_url, CFDictionaryRef(video_settings))
 
-
         output.stopRecording()
         session.stopRunning()
         return session
@@ -61,7 +60,7 @@ class WebCameraCapture(object):
         devices = AVCaptureDevice.devicesWithMediaType_(AVMediaTypeVideo)
         device = devices[camera_index] if devices else None
 
-        input = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)[0]
+        input, err = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)
         output = AVCaptureMovieFileOutput.alloc().init()
 
         if session.canAddInput_(input):
