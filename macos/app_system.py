@@ -26,7 +26,7 @@ class AppSystem(object):
      :return: [None]
      """
         subprocess.getoutput(cmd=f'pkill {application_name}')
-        return 'Successful...'
+        
 
     def close_all_app(self):
         for apps in AppKit.NSWorkspace.sharedWorkspace().runningApplications():
