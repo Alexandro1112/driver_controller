@@ -86,8 +86,16 @@ class WebCameraCapture(object):
         :return: Devises
         """
 
-        devices = AVCaptureDevice.devicesWithMediaType_('video')
-        list_devices = []
-        for device in devices:
-            list_devices.append(device.localizedName())
-            yield list_devices[-1]
+        params = [AVCaptureDeviceTypeBuiltInWideAngleCamera,
+                  AVCaptureDeviceTypeExternalUnknown]
+        dtype = (
+            AVFoundation.AVCaptureDevicePositionFront & AVFoundation.AVCaptureDevicePositionBack
+        )
+
+        camerasData = AVFoundation.AVCaptureDeviceDiscoverySession.discoverySessionWithDeviceTypes_mediaType_position_(
+            params,
+            AVFoundation.AVMediaTypeVideo,
+            dtype
+        )
+        return camerasData.devices()
+    
