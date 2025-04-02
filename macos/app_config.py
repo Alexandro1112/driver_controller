@@ -23,7 +23,7 @@ class AppConfigure(object):
             return subprocess.getoutput(cmd=path).split()[0]
 
     def move_app(self, app, x, y, width, height):
-        print(subprocess.getoutput(cmd="""osascript -e 'tell application "%s"
+    return subprocess.getoutput(cmd="""osascript -e 'tell application "%s"
                                    set bounds of front window to {%s, %s, %s, %s}
-                                   end tell'""" % (app, x, y, width, height), encoding='utf-8'))
+                                   end tell'""" % (app, x, y, width, height), encoding='utf-8')
 
