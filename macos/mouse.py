@@ -1,69 +1,61 @@
-from unittest.mock import Mock
-import AppKit
-import Quartz
-from .exceptions import *
+import Quartz.CoreGraphics
+import time
 
 
-class Mouse(object):
-    """Mouse events"""
-
-    def __init__(self):
-        try:
-            location = AppKit.NSEvent.mouseLocation()
-            self.position = (round(location.x), round(Quartz.CGDisplayPixelsHigh(0) - round(location.y)))
-
-        except AttributeError:
-            return
-
-    @classmethod
-    def EventInitScript(cls, ev, x, y, button):
-
-        """Initalizate mouse objc x: x-pos, y:y-pos"""
-        mouseEvent = Quartz.CGEventCreateMouseEvent(None,
-                                                    ev, (x, y), button)
-        Quartz.CGEventPost(Quartz.kCGHIDEventTap, mouseEvent)
-
-    call = Mock(side_effect=EventInitScript)
-    if call.called:
-        raise CallError()
-
-    def ClickEventInitScript(self, x, y, type):
-
-        """Click initalizate function"""
-        theEvent = Quartz.CoreGraphics.CGEventCreateMouseEvent(
+class MouseController:
+    def move_mouse(self, x, y):
+        move_event = Quartz.NSEvent.mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressure_(
+            Quartz.NSEventTypeMouseMoved,
+            Quartz.NSPoint(x, y),
+            0,
+            Quartz.CGEventGetTimestamp(Quartz.CGEventCreate(None)),
+            0,
             None,
-            type,
-            (x, y),
-            Quartz.CoreGraphics.kCGMouseButtonLeft)
-        Quartz.CoreGraphics.CGEventPost(Quartz.CoreGraphics.kCGHIDEventTap, theEvent)
+            0,
+            0,
+            0.5
+        )
 
-    @classmethod
-    def mouse_move(cls, x, y):
-        """Move mouse in pointed out possition."""
-        cls.EventInitScript(Quartz.kCGEventMouseMoved, x, y, 0)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, move_event.CGEvent())
 
-    @classmethod
-    def mouse_click(cls, x, y):
-        """Click mouse in current position."""
-        cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseDown, x, y, button=2)
-        cls.EventInitScript(Quartz.CoreGraphics.kCGEventLeftMouseUp, x, y, button=2)
+    def click_mouse(self, x, y):
 
-    @classmethod
-    def move_click(cls, x, y):
-        """Make click and mouse-move."""
-        theEvent = Quartz.CoreGraphics.CGEventCreateMouseEvent(None, 1, (x, y),
-                                                               Quartz.CoreGraphics.kCGMouseButtonLeft)
-        Quartz.CoreGraphics.CGEventPost(Quartz.CoreGraphics.kCGHIDEventTap, theEvent)
+        self.move_mouse(x, y)
+        time.sleep(0.1)
 
-    def scrolling(self, turnover: int):
-        scrollWheelEvent = Quartz.CGEventCreateScrollWheelEvent(
+        down_event = Quartz.NSEvent.mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressure_(
+            Quartz.NSEventTypeLeftMouseDown,
+            Quartz.NSPoint(x, y),
+            0,
+            Quartz.CGEventGetTimestamp(Quartz.CGEventCreate(None)),
+            0,
             None,
-            Quartz.kCGScrollPhaseBegan,
-            1,
-            15 if turnover >= 0 else -15)
-        Quartz.CGEventPost(Quartz.kCGHIDEventTap, scrollWheelEvent)
+            0,
+            0,
+            0.5
+        )
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, down_event.CGEvent())
 
-    @property
-    def mouse_position(self):
-        """Return mouse position"""
-        return self.position[0], self.position[1]
+        up_event = Quartz.NSEvent.mouseEventWithType_location_modifierFlags_timestamp_windowNumber_context_eventNumber_clickCount_pressure_(
+            Quartz.NSEventTypeLeftMouseUp,
+            Quartz.NSPoint(x, y),
+            0,
+            Quartz.CGEventGetTimestamp(Quartz.CGEventCreate(None)),
+            0,
+            None,
+            0,
+            0,
+            0.5
+        )
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, up_event.CGEvent())
+
+    def scroll_mouse(self, to):
+        scroll_event = Quartz.CGEventCreateScrollWheelEvent(None, 
+                                                            0, 
+                                                            Quartz.CoreGraphics.kCGScrollEventUnitLine,
+                                                            to)
+        Quartz.CGEventPost(Quartz.kCGHIDEventTap, scroll_event)
+
+    def location(self):
+        return Quartz.NSEvent.mouseLocation()
+
