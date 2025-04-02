@@ -110,43 +110,4 @@ class Wifi(object):
     def GetCounrtyCodeByCurrentWifi(self):
         return self.interface.countryCodeInternal()
 
-    def SetupDefaultDnsDommains(self, dns_address):
-        """Change DNS setting of wi-fi network.
-        :param dns_address address which available to confirm, default DNS settings."""
-        if dns_address != (i for i in ('8.8.8.8', '8.8.4.4')):
-            subprocess.getoutput(f'networksetup -setdnsservers Wi-Fi {dns_address}')
-
-        else:
-
-            store = SystemConfiguration.SCDynamicStoreCreate(None, 'Safari', None, None)
-            primaryif = SystemConfiguration.SCDynamicStoreCopyValue(store, 'State:/Network/Global/IPv4')[
-                'PrimaryInterface']
-
-            preferences = SystemConfiguration.SCPreferencesCreateWithAuthorization(None, 'Safari', None,
-                                                                                   SystemConfiguration.SFAuthorization.authorization().authorizationRef())
-            SystemConfiguration.SCPreferencesLock(preferences, True)
-
-            # Get list of network services
-            networkSet = SystemConfiguration.SCNetworkSetCopyCurrent(preferences)
-            networkSetServices = SystemConfiguration.SCNetworkSetCopyServices(networkSet)
-
-            for networkServiceIndex in networkSetServices:
-                interface = SystemConfiguration.SCNetworkServiceGetInterface(networkServiceIndex)
-                if primaryif != SystemConfiguration.SCNetworkInterfaceGetBSDName(interface):
-                    continue
-
-                # Load currently configured DNS servers
-                networkProtocol = SystemConfiguration.SCNetworkServiceCopyProtocol(networkServiceIndex,
-                                                                                   SystemConfiguration.kSCNetworkProtocolTypeDNS)
-                DNSDict = SystemConfiguration.SCNetworkProtocolGetConfiguration(networkProtocol) or {}
-                DNSDict[SystemConfiguration.kSCPropNetDNSServerAddresses] = ['192.168.23.12', '8.8.4.4']
-                SystemConfiguration.SCNetworkProtocolSetConfiguration(networkServiceIndex, DNSDict)
-
-                tuple_confirm = (
-                    SystemConfiguration.SCPreferencesUnlock(preferences),
-                    SystemConfiguration.SCPreferencesCommitChanges(preferences),
-                    SystemConfiguration.SCPreferencesApplyChanges(preferences))
-                if not any(tuple_confirm):
-                    raise warnings.warn('Setup dns setting did not confirmation.')
-                else:
-                    return 'Successful'
+   
