@@ -84,12 +84,6 @@ class Wifi(object):
     def IsEnable(self):
         return not subprocess.getoutput(cmd='airport -I | grep SSID').split(':')[-1].strip() == ''
 
-    def isUsedProxy(self):
-        """
-        :return: [False] if proxy/VPN not used, [True] is Using.
-        """
-        return self.interface.isProxy()
-
     def wifiChannel(self):
         """Return Wi-fi channel """
         return self.interface.channel()
