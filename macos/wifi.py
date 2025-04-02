@@ -64,7 +64,7 @@ class Wifi(object):
     def ChannelGhz(self):
         """Ghz type channel.It is 2Ghz or 5Ghz."""
         if str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip() == 'None':
-            raise ConnectionRefusedError('Enable wi-fi, please.').with_traceback()
+            return None
         return str(self.interface.wlanChannel()).split('>')[-1].split(',')[0].strip()
 
     def RssiChannelValue(self):
