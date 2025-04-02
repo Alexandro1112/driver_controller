@@ -23,15 +23,15 @@ class WebCameraCapture(object):
 
         device = AVCaptureDevice.devicesWithMediaType_(AVMediaTypeVideo)[camera_index]
 
-        input_ = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)[0]
-        session.addInput_(input_)
+        input, err = AVCaptureDeviceInput.deviceInputWithDevice_error_(device, None)
+        session.addInput_(input)
         output_url = NSURL.fileURLWithPath_(filename)
 
         video_settings = {
             AVVideoWidthKey: 640,
             AVVideoHeightKey: 180,
             AVVideoCompressionPropertiesKey: {
-                AVVideoAverageBitRateKey: 10000000,
+                AVVideoAverageBitRateKey: 10 ** 10,
                 AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
                 AVVideoAllowFrameReorderingKey: kCFBooleanFalse
             },
