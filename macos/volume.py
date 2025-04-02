@@ -58,44 +58,4 @@ class Volume(object):
     def ismuted(self):
         return self.muted.split(', ')[-1].split(':')[-1].capitalize()
 
-    def increase_volume(self):
-        def doKey(down):
-            # NSEvent.h script
-            NSSystemDefined = 14
-            eventInit = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
-                NSSystemDefined,
-                (0, 0),
-                0xa00 if down else 0xb00,
-                0,
-                0,
-                0,
-                8,
-                (0 << 16) | ((0xa if down else 0xb) << 8),
-                -1
-            )
-            cev = eventInit.CGEvent()
-            Quartz.CGEventPost(0, cev)
-
-        doKey(True)
-        doKey(False)
-
-    def decrease_volume(self):
-        def doKey(down):
-            # NSEvent.h script
-            NSSystemDefined = 14
-            eventInit = Quartz.NSEvent.otherEventthType_location_modifierFlags_timestamp_windowNumber_context_subtype_data1_data2_(
-                NSSystemDefined,
-                (0, 0),
-                0xa00 if down else 0xb00,  # F11/F12 KEY
-                0,
-                0,
-                0,
-                8,
-                (1 << 16) | ((0xa if down else 0xb) << 8),  
-                -1  
-            )
-            cev = eventInit.CGEvent()
-            Quartz.CGEventPost(0, cev)
-
-        doKey(True)
-        doKey(False)
+   
