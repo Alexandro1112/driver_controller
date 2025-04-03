@@ -6,8 +6,6 @@ from .exceptions import *
 class BackGroundScreen:
 
     def current_background_image(self):
-        import AppKit
-
         Id = Quartz.NSScreen.mainScreen()
         boolean = AppKit.NSWorkspace.sharedWorkspace().desktopImageURLForScreen_(Id)
         return boolean
