@@ -12,13 +12,13 @@ class Rotation:
     def setRotate(self, angle):
         load()
 
-        rotate_object = globals()['MPDisplay'].alloc().init()
+        mpd = globals()['MPDisplay'].alloc().init()
         if angle % 90 != 0:
             raise ValueError('The angle must be 90, 180, 270, or 0 degrees, not {}.'.format(angle))
-        if not rotate_object.canChangeOrientation():
+        if not mpd.canChangeOrientation():
             raise PermissionError(f'Can not manage main display, including {self.setRotate.__name__} possibility.')
         else:
-            rotate_object.setOrientation_(angle)
+            mpd.setOrientation_(angle)
 
     def get_rotate(self):
         load()
