@@ -10,7 +10,7 @@ class USB:
             ("IOServiceGetMatchingService", b'II@'),
             ("IOServiceMatching", b'@*'),
             ('IORegistryEntryCreateCFProperties', b'IIo^@@I'),
-            ]
+        ]
 
         variables = [
             ('kIOMasterPortDefault', b'I')
@@ -21,11 +21,8 @@ class USB:
 
         usb_devs = globals()['IOServiceGetMatchingService'](
             globals()['kIOMasterPortDefault'],
-            globals()['IOServiceMatching'](b'IOUSBHostDevice')
+            globals()['IOServiceMatching'](b'IOUSBDevice')
         )
-        
-        if usb_devs is None:
-            self.props = []
 
         err, self.props = globals()['IORegistryEntryCreateCFProperties'](
             usb_devs,
@@ -33,22 +30,18 @@ class USB:
             CoreFoundation.kCFAllocatorDefault,
             0
         )
-
-    def query_devices(self):
-        return self.props or []
-
-    def nameOrAddr(self):
         if self.props:
-            return self.props['USB Product Name']
+            for keys, values in self.props.items():
+                setattr(self, keys, values)  # add attributes
 
-    def identifier(self):
-        if self.props:
-            return self.props['IOServiceDEXTEntitlements']
+    def query(self):
+        return self.props
 
-    def vendorTitle(self):
+    def __getattr__(self, item):
         if self.props:
-            return self.props['kUSBVendorString']
+            pass
+        raise NotImplementedError
 
-    def powerData(self):
-        if self.props:
-            return self.props['IOPowerManagement']
+    def get(self, name):
+        if len(name.split()) >= 2:
+            return getattr(self, name).strip()
